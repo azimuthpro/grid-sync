@@ -1,0 +1,306 @@
+'use client'
+
+import { useState } from 'react'
+import { MapPin, Edit, Trash2, Star, Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { LocationForm } from './LocationForm'
+import type { UserLocation } from '@/types'
+import type { CreateLocationSchema } from '@/lib/schemas'
+import { formatPower, getErrorMessage } from '@/lib/utils'
+import { createUserLocation, updateUserLocation, deleteUserLocation } from '@/lib/supabase/queries'
+import { supabase } from '@/lib/supabase/client'
+
+interface LocationListProps {
+  locations: UserLocation[]
+  onLocationsChange: (locations: UserLocation[]) => void
+}
+
+export function LocationList({ locations, onLocationsChange }: LocationListProps) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [editingLocation, setEditingLocation] = useState<UserLocation | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleAddLocation = async (data: CreateLocationSchema) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const locationData = { ...data, user_id: user.id }
+      
+      // If this is being set as primary, unset other primary locations
+      if (data.is_primary) {
+        const updatePromises = locations.map(loc => 
+          loc.is_primary ? updateUserLocation(loc.id, { is_primary: false }) : Promise.resolve(loc)
+        )
+        await Promise.all(updatePromises)
+      }
+
+      const newLocation = await createUserLocation(locationData)
+      
+      const updatedLocations = data.is_primary
+        ? [newLocation, ...locations.map(loc => ({ ...loc, is_primary: false }))]
+        : [...locations, newLocation]
+      
+      onLocationsChange(updatedLocations)
+      setIsAddDialogOpen(false)
+    } catch (error) {
+      setError(getErrorMessage(error))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleEditLocation = async (data: CreateLocationSchema) => {
+    if (!editingLocation) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // If this is being set as primary, unset other primary locations
+      if (data.is_primary) {
+        const updatePromises = locations
+          .filter(loc => loc.id !== editingLocation.id)
+          .map(loc => 
+            loc.is_primary ? updateUserLocation(loc.id, { is_primary: false }) : Promise.resolve(loc)
+          )
+        await Promise.all(updatePromises)
+      }
+
+      const updatedLocation = await updateUserLocation(editingLocation.id, data)
+      
+      const updatedLocations = locations.map(loc => {
+        if (loc.id === editingLocation.id) {
+          return updatedLocation
+        }
+        if (data.is_primary && loc.is_primary) {
+          return { ...loc, is_primary: false }
+        }
+        return loc
+      })
+      
+      onLocationsChange(updatedLocations)
+      setEditingLocation(null)
+    } catch (error) {
+      setError(getErrorMessage(error))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteLocation = async (location: UserLocation) => {
+    if (!confirm(`Czy na pewno chcesz usunąć lokalizację "${location.name}"?`)) {
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      await deleteUserLocation(location.id)
+      
+      const updatedLocations = locations.filter(loc => loc.id !== location.id)
+      onLocationsChange(updatedLocations)
+    } catch (error) {
+      setError(getErrorMessage(error))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSetPrimary = async (location: UserLocation) => {
+    if (location.is_primary) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Unset current primary
+      const currentPrimary = locations.find(loc => loc.is_primary)
+      if (currentPrimary) {
+        await updateUserLocation(currentPrimary.id, { is_primary: false })
+      }
+
+      // Set new primary
+      await updateUserLocation(location.id, { is_primary: true })
+
+      const updatedLocations = locations.map(loc => ({
+        ...loc,
+        is_primary: loc.id === location.id
+      }))
+      
+      onLocationsChange(updatedLocations)
+    } catch (error) {
+      setError(getErrorMessage(error))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (locations.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Brak lokalizacji</h3>
+        <p className="text-gray-500 mb-6">Dodaj pierwszą lokalizację, aby rozpocząć zarządzanie energią</p>
+        
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Dodaj lokalizację
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Dodaj nową lokalizację</DialogTitle>
+            </DialogHeader>
+            <LocationForm
+              onSubmit={handleAddLocation}
+              onCancel={() => setIsAddDialogOpen(false)}
+              isLoading={isLoading}
+            />
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-6">
+          <p className="text-red-800 text-sm">{error}</p>
+        </div>
+      )}
+
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Twoje lokalizacje ({locations.length})
+        </h2>
+        
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Dodaj lokalizację
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Dodaj nową lokalizację</DialogTitle>
+            </DialogHeader>
+            <LocationForm
+              onSubmit={handleAddLocation}
+              onCancel={() => setIsAddDialogOpen(false)}
+              isLoading={isLoading}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        {locations.map((location) => (
+          <div
+            key={location.id}
+            className={`p-6 bg-white border rounded-lg shadow-sm ${
+              location.is_primary ? 'border-blue-300 bg-blue-50/50' : 'border-gray-200'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-4">
+                <div className={`p-2 rounded-lg ${
+                  location.is_primary ? 'bg-blue-100' : 'bg-gray-100'
+                }`}>
+                  <MapPin className={`h-5 w-5 ${
+                    location.is_primary ? 'text-blue-600' : 'text-gray-600'
+                  }`} />
+                </div>
+                
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-gray-900">{location.name}</h3>
+                    {location.is_primary && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <Star className="h-3 w-3 mr-1" />
+                        Główna
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-600">{location.city}</p>
+                  <p className="text-sm text-gray-500">{formatPower(location.pv_power_kwp)}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                {!location.is_primary && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSetPrimary(location)}
+                    disabled={isLoading}
+                    title="Ustaw jako główną"
+                  >
+                    <Star className="h-4 w-4" />
+                  </Button>
+                )}
+                
+                <Dialog open={editingLocation?.id === location.id} onOpenChange={(open) => {
+                  if (!open) setEditingLocation(null)
+                }}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingLocation(location)}
+                      disabled={isLoading}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Edytuj lokalizację</DialogTitle>
+                    </DialogHeader>
+                    <LocationForm
+                      onSubmit={handleEditLocation}
+                      onCancel={() => setEditingLocation(null)}
+                      initialData={{
+                        name: location.name,
+                        city: location.city,
+                        pv_power_kwp: location.pv_power_kwp,
+                        is_primary: location.is_primary,
+                        user_id: location.user_id
+                      }}
+                      isLoading={isLoading}
+                    />
+                  </DialogContent>
+                </Dialog>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteLocation(location)}
+                  disabled={isLoading}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
