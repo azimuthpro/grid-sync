@@ -2,6 +2,7 @@
   "name": "grid-sync",
   "version": "0.1.1",
   "private": true,
+  "author": "Matt Sowa <sowa@hush.ai>",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

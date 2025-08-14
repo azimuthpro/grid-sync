@@ -2,6 +2,8 @@
 
 A desktop web application for prosumers (energy producers-consumers) that automates energy balance calculations from photovoltaic installations and generates reports for grid operators.
 
+**Author:** Matt Sowa <sowa@hush.ai>
+
 ## Features
 
 ### 🏠 Multi-Location Management
