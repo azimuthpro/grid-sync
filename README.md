@@ -146,6 +146,20 @@ src/
 
 ## Version History
 
+### v0.1.1 (August 14, 2025)
+
+**Performance Improvements**
+
+**Technical Updates:**
+- **Enhanced data fetching** - Implemented SWR for improved caching and real-time data synchronization
+- **Optimized API routes** - Refactored data fetching patterns for better performance and reliability
+- **Improved client-side state management** - Enhanced data loading states and error handling
+
+**Developer Experience:**
+- Better data caching strategies for faster page loads
+- More reliable API error handling and retry mechanisms
+- Optimized network request patterns for reduced server load
+
 ### v0.1.0 (August 14, 2025)
 
 **Initial Release** - Full-featured GridSync application for prosumer energy management
