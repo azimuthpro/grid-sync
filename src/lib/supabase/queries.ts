@@ -1,7 +1,8 @@
-import { supabase } from './client'
+import { createSupabaseBrowserClient } from './client'
 import type { UserLocation, ConsumptionProfile, InsolationData } from '@/types'
 
 export async function getUserLocations(userId: string): Promise<UserLocation[]> {
+  const supabase = createSupabaseBrowserClient()
   const { data, error } = await supabase
     .from('user_locations')
     .select('*')
@@ -16,6 +17,7 @@ export async function getUserLocations(userId: string): Promise<UserLocation[]> 
 }
 
 export async function createUserLocation(location: Omit<UserLocation, 'id' | 'created_at' | 'updated_at'>): Promise<UserLocation> {
+  const supabase = createSupabaseBrowserClient()
   const { data, error } = await supabase
     .from('user_locations')
     .insert(location)
@@ -27,6 +29,7 @@ export async function createUserLocation(location: Omit<UserLocation, 'id' | 'cr
 }
 
 export async function updateUserLocation(id: string, updates: Partial<UserLocation>): Promise<UserLocation> {
+  const supabase = createSupabaseBrowserClient()
   const { data, error } = await supabase
     .from('user_locations')
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -39,6 +42,7 @@ export async function updateUserLocation(id: string, updates: Partial<UserLocati
 }
 
 export async function deleteUserLocation(id: string): Promise<void> {
+  const supabase = createSupabaseBrowserClient()
   const { error } = await supabase
     .from('user_locations')
     .delete()
@@ -48,6 +52,7 @@ export async function deleteUserLocation(id: string): Promise<void> {
 }
 
 export async function getConsumptionProfile(locationId: string): Promise<ConsumptionProfile[]> {
+  const supabase = createSupabaseBrowserClient()
   const { data, error } = await supabase
     .from('consumption_profiles')
     .select('*')
@@ -63,6 +68,7 @@ export async function updateConsumptionProfile(
   locationId: string, 
   profiles: Array<{ day_of_week: number; hour: number; consumption_kwh: number }>
 ): Promise<void> {
+  const supabase = createSupabaseBrowserClient()
   // Delete existing profiles
   await supabase
     .from('consumption_profiles')
@@ -86,6 +92,7 @@ export async function updateConsumptionProfile(
 }
 
 export async function getInsolationData(city: string, date: string): Promise<InsolationData[]> {
+  const supabase = createSupabaseBrowserClient()
   const { data, error } = await supabase
     .from('insolation_data')
     .select('*')
@@ -98,6 +105,7 @@ export async function getInsolationData(city: string, date: string): Promise<Ins
 }
 
 export async function getInsolationDataRange(city: string, startDate: string, endDate: string): Promise<InsolationData[]> {
+  const supabase = createSupabaseBrowserClient()
   const { data, error } = await supabase
     .from('insolation_data')
     .select('*')

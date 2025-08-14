@@ -1,47 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
-import { getUserLocations } from '@/lib/supabase/queries'
+import { useLocations } from '@/hooks/useLocations'
 import { MapPin, Zap, FileText, Plus } from 'lucide-react'
 import Link from 'next/link'
-import type { UserLocation } from '@/types'
 import { formatPower } from '@/lib/utils'
 
 export default function DashboardPage() {
-  const [locations, setLocations] = useState<UserLocation[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
-        
-        if (authError) {
-          console.error('Authentication error:', authError)
-          return
-        }
-        
-        if (!user) {
-          return
-        }
-        
-        const userLocations = await getUserLocations(user.id)
-        setLocations(userLocations)
-      } catch (error) {
-        console.error('Error loading dashboard data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadData()
-  }, [])
+  const { data: locations = [], isLoading } = useLocations()
 
   const primaryLocation = locations.find(loc => loc.is_primary)
   const totalPower = locations.reduce((sum, loc) => sum + loc.pv_power_kwp, 0)
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-8">
         <div className="animate-pulse">

@@ -1,39 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
-import { getUserLocations } from '@/lib/supabase/queries'
+import { useLocations } from '@/hooks/useLocations'
 import { LocationList } from '@/components/locations/LocationList'
-import type { UserLocation } from '@/types'
 import { getErrorMessage } from '@/lib/utils'
 
 export default function LocationsPage() {
-  const [locations, setLocations] = useState<UserLocation[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: locations = [], error, isLoading } = useLocations()
 
-  useEffect(() => {
-    const loadLocations = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) {
-          setError('Użytkownik nie jest zalogowany')
-          return
-        }
-
-        const userLocations = await getUserLocations(user.id)
-        setLocations(userLocations)
-      } catch (error) {
-        setError(getErrorMessage(error))
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadLocations()
-  }, [])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-8">
         <div className="animate-pulse">
@@ -59,14 +33,11 @@ export default function LocationsPage() {
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-          <p className="text-red-800">{error}</p>
+          <p className="text-red-800">{getErrorMessage(error)}</p>
         </div>
       )}
 
-      <LocationList
-        locations={locations}
-        onLocationsChange={setLocations}
-      />
+      <LocationList locations={locations} />
     </div>
   )
 }

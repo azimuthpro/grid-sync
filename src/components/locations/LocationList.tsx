@@ -5,48 +5,29 @@ import { MapPin, Edit, Trash2, Star, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { LocationForm } from './LocationForm'
+import { useLocations } from '@/hooks/useLocations'
 import type { UserLocation } from '@/types'
 import type { CreateLocationSchema } from '@/lib/schemas'
 import { formatPower, getErrorMessage } from '@/lib/utils'
-import { createUserLocation, updateUserLocation, deleteUserLocation } from '@/lib/supabase/queries'
-import { supabase } from '@/lib/supabase/client'
 
 interface LocationListProps {
   locations: UserLocation[]
-  onLocationsChange: (locations: UserLocation[]) => void
 }
 
-export function LocationList({ locations, onLocationsChange }: LocationListProps) {
+export function LocationList({ locations }: LocationListProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [editingLocation, setEditingLocation] = useState<UserLocation | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  const { createLocation, updateLocation, deleteLocation } = useLocations()
 
   const handleAddLocation = async (data: CreateLocationSchema) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const locationData = { ...data, user_id: user.id }
-      
-      // If this is being set as primary, unset other primary locations
-      if (data.is_primary) {
-        const updatePromises = locations.map(loc => 
-          loc.is_primary ? updateUserLocation(loc.id, { is_primary: false }) : Promise.resolve(loc)
-        )
-        await Promise.all(updatePromises)
-      }
-
-      const newLocation = await createUserLocation(locationData)
-      
-      const updatedLocations = data.is_primary
-        ? [newLocation, ...locations.map(loc => ({ ...loc, is_primary: false }))]
-        : [...locations, newLocation]
-      
-      onLocationsChange(updatedLocations)
+      await createLocation(data)
       setIsAddDialogOpen(false)
     } catch (error) {
       setError(getErrorMessage(error))
@@ -62,29 +43,7 @@ export function LocationList({ locations, onLocationsChange }: LocationListProps
     setError(null)
 
     try {
-      // If this is being set as primary, unset other primary locations
-      if (data.is_primary) {
-        const updatePromises = locations
-          .filter(loc => loc.id !== editingLocation.id)
-          .map(loc => 
-            loc.is_primary ? updateUserLocation(loc.id, { is_primary: false }) : Promise.resolve(loc)
-          )
-        await Promise.all(updatePromises)
-      }
-
-      const updatedLocation = await updateUserLocation(editingLocation.id, data)
-      
-      const updatedLocations = locations.map(loc => {
-        if (loc.id === editingLocation.id) {
-          return updatedLocation
-        }
-        if (data.is_primary && loc.is_primary) {
-          return { ...loc, is_primary: false }
-        }
-        return loc
-      })
-      
-      onLocationsChange(updatedLocations)
+      await updateLocation(editingLocation.id, data)
       setEditingLocation(null)
     } catch (error) {
       setError(getErrorMessage(error))
@@ -102,10 +61,7 @@ export function LocationList({ locations, onLocationsChange }: LocationListProps
     setError(null)
 
     try {
-      await deleteUserLocation(location.id)
-      
-      const updatedLocations = locations.filter(loc => loc.id !== location.id)
-      onLocationsChange(updatedLocations)
+      await deleteLocation(location.id)
     } catch (error) {
       setError(getErrorMessage(error))
     } finally {
@@ -120,21 +76,7 @@ export function LocationList({ locations, onLocationsChange }: LocationListProps
     setError(null)
 
     try {
-      // Unset current primary
-      const currentPrimary = locations.find(loc => loc.is_primary)
-      if (currentPrimary) {
-        await updateUserLocation(currentPrimary.id, { is_primary: false })
-      }
-
-      // Set new primary
-      await updateUserLocation(location.id, { is_primary: true })
-
-      const updatedLocations = locations.map(loc => ({
-        ...loc,
-        is_primary: loc.id === location.id
-      }))
-      
-      onLocationsChange(updatedLocations)
+      await updateLocation(location.id, { is_primary: true })
     } catch (error) {
       setError(getErrorMessage(error))
     } finally {
