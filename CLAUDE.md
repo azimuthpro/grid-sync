@@ -221,6 +221,30 @@ Keep commit messages clean and focused only on describing all uncommitted change
 
 ## Recent Updates
 
+### v0.1.3 (August 16, 2025) - Comprehensive Insolation Data Management System
+
+**Significant architectural changes for LLM context:**
+
+- **New insolation data management system** with complete visualization and automated processing capabilities
+- **New API routes** for LLM context:
+  - `/api/insolation` - Complete CRUD operations for solar irradiation data management
+  - `/api/cron` - Automated data processing endpoints with authentication for scheduled tasks
+  - GET, POST, PUT, DELETE endpoints with comprehensive validation and error handling
+- **Enhanced service architecture** with InsolationService providing centralized data operations
+- **New component architecture** for insolation data visualization:
+  - InsolationChart component for interactive data visualization
+  - InsolationCard and InsolationOverview for comprehensive data display
+  - Integration with existing dashboard layout and navigation
+- **Automated data pipeline** with CRON job integration for reliable data updates
+- **Enhanced production calculation utilities** in `lib/utils/pv-production.ts` for accurate energy estimates
+
+**Technical integration points:**
+- New insolation dashboard routing: `/dashboard/insolation`
+- Integration with existing location management for city-specific data
+- Enhanced PV production calculations using real insolation data
+- CRON authentication system for secure automated processing
+- Database schema utilizes existing `insolation_data` table with optimized operations
+
 ### v0.1.2 (August 16, 2025) - Energy Consumption Profiling Enhancement
 
 **Significant architectural changes for LLM context:**

@@ -148,6 +148,29 @@ src/
 
 ## Version History
 
+### v0.1.3 (August 16, 2025)
+
+**Comprehensive Insolation Data Management System**
+
+**Major Features:**
+- **Complete insolation data visualization** - Interactive charts and comprehensive data management for solar irradiation forecasts
+- **Advanced city-based tracking** - Detailed insolation monitoring per city with historical data and forecasting
+- **Automated data processing** - CRON job integration for automatic insolation data updates and maintenance
+- **Enhanced production calculations** - Improved PV production estimates using real insolation data for accurate energy balance reports
+
+**User Experience Improvements:**
+- **Dedicated insolation dashboard** - New insolation page with comprehensive data visualization and management tools
+- **Interactive data charts** - Visual representation of solar irradiation patterns with filtering and analysis capabilities
+- **Real-time data updates** - Automatic synchronization of insolation forecasts with improved error handling
+- **Production insights** - Enhanced energy production calculations based on actual solar irradiation data
+
+**Technical Implementation:**
+- **New API endpoints** - `/api/insolation` and `/api/cron` routes for data management and automated processing
+- **Enhanced data services** - InsolationService with comprehensive CRUD operations and data validation
+- **Modular component architecture** - InsolationChart, InsolationCard, and InsolationOverview components
+- **Automated data pipeline** - CRON authentication and scheduled data processing for reliable updates
+- **Production calculation utilities** - Advanced PV production estimation based on location-specific insolation data
+
 ### v0.1.2 (August 16, 2025)
 
 **Energy Consumption Profiling Enhancement**
