@@ -148,6 +148,25 @@ src/
 
 ## Version History
 
+### v0.1.4 (August 16, 2025)
+
+**Performance Optimizations and Data Management Improvements**
+
+**Major Improvements:**
+- **Optimized batch operations** - Enhanced insolation data processing with improved batch operations and extended timeout handling for better reliability
+- **Extended Polish cities support** - Updated comprehensive list of Polish cities for more accurate regional insolation data
+- **Enhanced vision service** - Improved data processing variations and performance optimizations
+
+**Technical Enhancements:**
+- **Database optimization** - Improved batch operation handling for large-scale insolation data processing
+- **Extended timeout support** - Better handling of long-running data processing operations
+- **Service reliability** - Enhanced error handling and recovery mechanisms for automated data processing
+
+**Data Management:**
+- Expanded geographical coverage with additional Polish cities for more precise location-based calculations
+- Improved data processing pipeline efficiency for faster insolation forecast updates
+- Enhanced system stability for automated CRON job operations
+
 ### v0.1.3 (August 16, 2025)
 
 **Comprehensive Insolation Data Management System**
