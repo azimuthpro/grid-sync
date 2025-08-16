@@ -216,27 +216,25 @@ export interface CityWithProvince {
 
 // Polish cities with their provinces
 export const POLISH_CITIES_WITH_PROVINCES: Record<string, string> = {
-  'Warszawa': 'Mazowieckie',
-  'Kraków': 'Małopolskie', 
-  'Wrocław': 'Dolnośląskie',
-  'Poznań': 'Wielkopolskie',
-  'Gdańsk': 'Pomorskie',
-  'Szczecin': 'Zachodniopomorskie',
-  'Bydgoszcz': 'Kujawsko-Pomorskie',
-  'Lublin': 'Lubelskie',
   'Białystok': 'Podlaskie',
-  'Katowice': 'Śląskie',
-  'Częstochowa': 'Śląskie',
-  'Radom': 'Mazowieckie',
-  'Toruń': 'Kujawsko-Pomorskie',
-  'Kielce': 'Świętokrzyskie',
-  'Rzeszów': 'Podkarpackie',
+  'Bydgoszcz': 'Kujawsko-Pomorskie',
+  'Gdańsk': 'Pomorskie',
   'Gorzów Wielkopolski': 'Lubuskie',
-  'Opole': 'Opolskie',
+  'Katowice': 'Śląskie',
+  'Kielce': 'Świętokrzyskie',
+  'Koszalin': 'Zachodniopomorskie',
+  'Kraków': 'Małopolskie',
+  'Lublin': 'Lubelskie',
   'Olsztyn': 'Warmińsko-Mazurskie',
+  'Opole': 'Opolskie',
+  'Poznań': 'Wielkopolskie',
+  'Rzeszów': 'Podkarpackie',
+  'Szczecin': 'Zachodniopomorskie',
+  'Toruń': 'Kujawsko-Pomorskie',
+  'Warszawa': 'Mazowieckie',
+  'Wrocław': 'Dolnośląskie',
   'Zielona Góra': 'Lubuskie',
   'Łódź': 'Łódzkie',
-  'Jawor': 'Dolnośląskie'
 } as const
 
 export type PolishCity = keyof typeof POLISH_CITIES_WITH_PROVINCES

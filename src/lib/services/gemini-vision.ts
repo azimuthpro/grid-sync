@@ -170,15 +170,8 @@ export class GeminiVisionService {
 
     // Handle common variations
     const variations: Record<string, PolishCity> = {
-      'warszawa': 'Warszawa',
-      'krakow': 'Kraków',
-      'cracow': 'Kraków',
-      'wroclaw': 'Wrocław',
-      'poznan': 'Poznań',
-      'gdansk': 'Gdańsk',
-      'lodz': 'Łódź',
-      'jawor': 'Jawor',
-      'czestochowa': 'Częstochowa'
+      'Gorzów': 'Gorzów Wielkopolski',
+      'Zielona G.': 'Zielona Góra',
     }
 
     const variationMatch = variations[normalized.toLowerCase()]
