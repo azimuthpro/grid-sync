@@ -1,9 +1,10 @@
 'use client'
 
 import { useLocations } from '@/hooks/useLocations'
-import { MapPin, Zap, FileText, Plus } from 'lucide-react'
+import { MapPin, Zap, FileText, Plus, Sun } from 'lucide-react'
 import Link from 'next/link'
 import { formatPower } from '@/lib/utils'
+import { ProductionSummaryWidget } from '@/components/dashboard/ProductionSummaryWidget'
 
 export default function DashboardPage() {
   const { data: locations = [], isLoading } = useLocations()
@@ -73,6 +74,13 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Production Summary Widget */}
+      {locations.length > 0 && (
+        <div className="mb-8">
+          <ProductionSummaryWidget />
+        </div>
+      )}
 
       {/* Main content area */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -155,6 +163,19 @@ export default function DashboardPage() {
               <div className="ml-4">
                 <p className="font-medium text-gray-100">Zarządzaj lokalizacjami</p>
                 <p className="text-sm text-gray-400">Dodaj lub edytuj swoje instalacje PV</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/insolation"
+              className="flex items-center p-4 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <div className="p-2 bg-amber-950/50 rounded-lg ring-1 ring-amber-500/20">
+                <Sun className="h-5 w-5 text-amber-500" />
+              </div>
+              <div className="ml-4">
+                <p className="font-medium text-gray-100">Dane nasłonecznienia</p>
+                <p className="text-sm text-gray-400">Przeglądaj dane nasłonecznienia według regionów</p>
               </div>
             </Link>
 

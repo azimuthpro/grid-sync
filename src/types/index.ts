@@ -25,6 +25,7 @@ export interface ConsumptionProfile {
 export interface InsolationData {
   id: number
   city: string
+  province: string | null // Polish province/voivodeship
   date: string
   hour: number // 0-23
   insolation_percentage: number // 0-100
@@ -187,31 +188,69 @@ export interface WeeklyConsumptionPattern {
   [day: number]: { [hour: number]: number }
 }
 
-// Polish cities enum
-export const POLISH_CITIES = [
-  'Warszawa',
-  'Kraków', 
-  'Wrocław',
-  'Poznań',
-  'Gdańsk',
-  'Szczecin',
-  'Bydgoszcz',
-  'Lublin',
-  'Białystok',
-  'Katowice',
-  'Częstochowa',
-  'Radom',
-  'Toruń',
-  'Kielce',
-  'Rzeszów',
-  'Gorzów Wielkopolski',
-  'Opole',
-  'Olsztyn',
-  'Zielona Góra',
-  'Łódź'
+// Polish provinces
+export const POLISH_PROVINCES = [
+  'Dolnośląskie',
+  'Kujawsko-Pomorskie',
+  'Lubelskie',
+  'Lubuskie',
+  'Łódzkie',
+  'Małopolskie',
+  'Mazowieckie',
+  'Opolskie',
+  'Podkarpackie',
+  'Podlaskie',
+  'Pomorskie',
+  'Śląskie',
+  'Świętokrzyskie',
+  'Warmińsko-Mazurskie',
+  'Wielkopolskie',
+  'Zachodniopomorskie'
 ] as const
 
-export type PolishCity = typeof POLISH_CITIES[number]
+// City-Province structure for better organization
+export interface CityWithProvince {
+  city: string
+  province: string
+}
+
+// Polish cities with their provinces
+export const POLISH_CITIES_WITH_PROVINCES: Record<string, string> = {
+  'Warszawa': 'Mazowieckie',
+  'Kraków': 'Małopolskie', 
+  'Wrocław': 'Dolnośląskie',
+  'Poznań': 'Wielkopolskie',
+  'Gdańsk': 'Pomorskie',
+  'Szczecin': 'Zachodniopomorskie',
+  'Bydgoszcz': 'Kujawsko-Pomorskie',
+  'Lublin': 'Lubelskie',
+  'Białystok': 'Podlaskie',
+  'Katowice': 'Śląskie',
+  'Częstochowa': 'Śląskie',
+  'Radom': 'Mazowieckie',
+  'Toruń': 'Kujawsko-Pomorskie',
+  'Kielce': 'Świętokrzyskie',
+  'Rzeszów': 'Podkarpackie',
+  'Gorzów Wielkopolski': 'Lubuskie',
+  'Opole': 'Opolskie',
+  'Olsztyn': 'Warmińsko-Mazurskie',
+  'Zielona Góra': 'Lubuskie',
+  'Łódź': 'Łódzkie',
+  'Jawor': 'Dolnośląskie'
+} as const
+
+export type PolishCity = keyof typeof POLISH_CITIES_WITH_PROVINCES
+
+// Helper function to get province for a city
+export function getProvinceForCity(city: string): string | undefined {
+  return POLISH_CITIES_WITH_PROVINCES[city]
+}
+
+// Helper function to get formatted city display with province
+export function getCityDisplayName(city: string): string {
+  const province = getProvinceForCity(city)
+  return province ? `${city} (${province})` : city
+}
 
 // API Response types
 export interface ApiResponse<T = unknown> {
@@ -247,3 +286,40 @@ export const SOLAR_CONSTANTS = {
   SYSTEM_LOSSES: 0.85, // 15% system losses
   INVERTER_EFFICIENCY: 0.95 // 95% inverter efficiency
 } as const
+
+// Cron job types
+export interface InsolationImageData {
+  imageUrl: string
+  percentage: number
+  date: string
+  hour: number
+  cityData: Record<string, number> // city -> insolation percentage
+}
+
+export interface GeminiVisionResponse {
+  date: string
+  hour: number
+  cities: Array<{
+    name: string
+    province?: string // Optional as Gemini might not always identify it
+    insolation_percentage: number
+  }>
+}
+
+export interface CronJobResult {
+  success: boolean
+  processed_images: number
+  failed_images: number
+  database_writes: number
+  errors: string[]
+  execution_time_ms: number
+  timestamp: string
+}
+
+export interface InsolationDataInput {
+  city: string
+  province: string
+  date: string
+  hour: number
+  insolation_percentage: number
+}

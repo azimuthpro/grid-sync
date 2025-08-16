@@ -59,20 +59,23 @@ CREATE INDEX idx_consumption_profiles_day_hour ON public.consumption_profiles(da
 CREATE TABLE public.insolation_data (
     id SERIAL PRIMARY KEY,
     city TEXT NOT NULL,
+    province TEXT, -- Polish province/voivodeship (nullable for backward compatibility)
     date DATE NOT NULL,
     hour INTEGER NOT NULL CHECK (hour >= 0 AND hour <= 23),
     insolation_percentage DECIMAL(5,2) NOT NULL CHECK (insolation_percentage >= 0 AND insolation_percentage <= 100),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Create unique constraint for city/date/hour combination
+-- Create unique constraint for city/province/date/hour combination
 CREATE UNIQUE INDEX idx_insolation_data_unique_entry 
-ON public.insolation_data(city, date, hour);
+ON public.insolation_data(city, COALESCE(province, 'unknown'), date, hour);
 
 -- Create indexes for faster queries
 CREATE INDEX idx_insolation_data_city ON public.insolation_data(city);
+CREATE INDEX idx_insolation_data_province ON public.insolation_data(province);
 CREATE INDEX idx_insolation_data_date ON public.insolation_data(date);
 CREATE INDEX idx_insolation_data_city_date ON public.insolation_data(city, date);
+CREATE INDEX idx_insolation_data_city_province ON public.insolation_data(city, province);
 
 -- =====================================================
 -- ROW LEVEL SECURITY POLICIES
@@ -278,11 +281,12 @@ GRANT EXECUTE ON FUNCTION get_weekly_consumption_pattern(UUID) TO authenticated;
 
 COMMENT ON TABLE public.user_locations IS 'Stores user photovoltaic installation locations with power capacity and location details';
 COMMENT ON TABLE public.consumption_profiles IS 'Stores weekly energy consumption patterns (168 data points: 7 days × 24 hours) for each location';
-COMMENT ON TABLE public.insolation_data IS 'Stores solar irradiation forecast data by city, date, and hour for energy production calculations';
+COMMENT ON TABLE public.insolation_data IS 'Stores solar irradiation forecast data by city, province, date, and hour for energy production calculations';
 
 COMMENT ON COLUMN public.user_locations.pv_power_kwp IS 'Photovoltaic installation power capacity in kilowatts peak (kWp)';
 COMMENT ON COLUMN public.consumption_profiles.day_of_week IS 'Day of week: 0=Sunday, 1=Monday, ..., 6=Saturday';
 COMMENT ON COLUMN public.consumption_profiles.hour IS 'Hour of day in 24-hour format (0-23)';
+COMMENT ON COLUMN public.insolation_data.province IS 'Polish province (voivodeship) where the city is located. Allows distinguishing cities with the same name in different provinces.';
 COMMENT ON COLUMN public.insolation_data.insolation_percentage IS 'Solar irradiation as percentage of standard test conditions (0-100%)';
 
 -- Schema setup complete

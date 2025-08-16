@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { POLISH_CITIES_WITH_PROVINCES } from '@/types'
 
 // Branded types for better type safety
 export const UserIdSchema = z.string().brand('UserId')
@@ -68,6 +69,7 @@ export const batchConsumptionUpdateSchema = z.object({
 export const insolationDataSchema = z.object({
   id: z.number().int().positive().optional(),
   city: z.string().min(1, 'Miasto jest wymagane'),
+  province: z.string().min(1, 'Województwo jest wymagane'),
   date: z.date().or(z.string().pipe(z.coerce.date())),
   hour: z.number().int().min(0, 'Godzina musi być między 0-23').max(23, 'Godzina musi być między 0-23'),
   insolation_percentage: z.number().min(0, 'Procent nasłonecznienia nie może być ujemny').max(100, 'Procent nasłonecznienia nie może być większy niż 100'),
@@ -123,28 +125,7 @@ export const chatRequestSchema = z.object({
 })
 
 // Predefined Polish cities with solar data
-export const polishCitiesSchema = z.enum([
-  'Warszawa',
-  'Kraków',
-  'Wrocław',
-  'Poznań',
-  'Gdańsk',
-  'Szczecin',
-  'Bydgoszcz',
-  'Lublin',
-  'Białystok',
-  'Katowice',
-  'Częstochowa',
-  'Radom',
-  'Toruń',
-  'Kielce',
-  'Rzeszów',
-  'Gorzów Wielkopolski',
-  'Opole',
-  'Olsztyn',
-  'Zielona Góra',
-  'Łódź'
-])
+export const polishCitiesSchema = z.enum(Object.keys(POLISH_CITIES_WITH_PROVINCES) as [string, ...string[]])
 
 // Export types from schemas
 export type UserId = z.infer<typeof UserIdSchema>

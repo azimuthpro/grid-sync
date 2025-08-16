@@ -54,14 +54,14 @@ export async function middleware(request: NextRequest) {
   }
 
   // Define public routes that don't require authentication
-  const publicRoutes = ['/login', '/register']
+  const publicRoutes = ['/login', '/register', '/api/cron']
   const isPublicRoute = publicRoutes.some(route => 
     request.nextUrl.pathname.startsWith(route)
   )
 
   // Define protected routes that require authentication
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
-                          request.nextUrl.pathname.startsWith('/api') ||
+                          (request.nextUrl.pathname.startsWith('/api') && !request.nextUrl.pathname.startsWith('/api/cron')) ||
                           request.nextUrl.pathname === '/'
 
   // If user is not authenticated and trying to access protected route

@@ -12,7 +12,8 @@ import {
   Settings, 
   LogOut,
   User as UserIcon,
-  BarChart3
+  BarChart3,
+  Sun
 } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ import { cn } from '@/lib/utils'
 const navigation = [
   { name: 'Panel główny', href: '/dashboard', icon: Home },
   { name: 'Lokalizacje', href: '/dashboard/locations', icon: MapPin },
+  { name: 'Dane nasłonecznienia', href: '/dashboard/insolation', icon: Sun },
   { name: 'Raporty', href: '/dashboard/reports', icon: FileText },
   { name: 'Ustawienia', href: '/dashboard/settings', icon: Settings },
 ]

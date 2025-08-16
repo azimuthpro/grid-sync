@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { LocationForm } from './LocationForm'
+import { LocationProductionCard } from './LocationProductionCard'
 import { useLocations } from '@/hooks/useLocations'
 import type { UserLocation } from '@/types'
 import type { CreateLocationSchema } from '@/lib/schemas'
@@ -153,7 +154,7 @@ export function LocationList({ locations }: LocationListProps) {
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-6">
         {locations.map((location) => (
           <div
             key={location.id}
@@ -161,96 +162,106 @@ export function LocationList({ locations }: LocationListProps) {
               location.is_primary ? 'border-blue-500/50 bg-blue-950/30' : 'border-gray-700'
             }`}
           >
-            <div className="flex items-start justify-between">
-              <div className="flex items-start space-x-4">
-                <div className={`p-2 rounded-lg ${
-                  location.is_primary ? 'bg-blue-950/50 ring-1 ring-blue-500/20' : 'bg-gray-800'
-                }`}>
-                  <MapPin className={`h-5 w-5 ${
-                    location.is_primary ? 'text-blue-500' : 'text-gray-400'
-                  }`} />
-                </div>
-                
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-100">{location.name}</h3>
-                    {location.is_primary && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-950/50 text-blue-400 ring-1 ring-blue-500/20">
-                        <Star className="h-3 w-3 mr-1" />
-                        Główna
-                      </span>
-                    )}
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Location info section */}
+              <div className="lg:col-span-2">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start space-x-4">
+                    <div className={`p-2 rounded-lg ${
+                      location.is_primary ? 'bg-blue-950/50 ring-1 ring-blue-500/20' : 'bg-gray-800'
+                    }`}>
+                      <MapPin className={`h-5 w-5 ${
+                        location.is_primary ? 'text-blue-500' : 'text-gray-400'
+                      }`} />
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-gray-100">{location.name}</h3>
+                        {location.is_primary && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-950/50 text-blue-400 ring-1 ring-blue-500/20">
+                            <Star className="h-3 w-3 mr-1" />
+                            Główna
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-300">{location.city}</p>
+                      <p className="text-sm text-gray-400">{formatPower(location.pv_power_kwp)}</p>
+                    </div>
                   </div>
-                  <p className="text-gray-300">{location.city}</p>
-                  <p className="text-sm text-gray-400">{formatPower(location.pv_power_kwp)}</p>
-                </div>
-              </div>
 
-              <div className="flex items-center space-x-2">
-                {!location.is_primary && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSetPrimary(location)}
-                    disabled={isLoading}
-                    title="Ustaw jako główną"
-                  >
-                    <Star className="h-4 w-4" />
-                  </Button>
-                )}
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/dashboard/locations/${location.id}/consumption`)}
-                  disabled={isLoading}
-                  title="Zarządzaj profilem zużycia energii"
-                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-950/50"
-                >
-                  <Zap className="h-4 w-4" />
-                </Button>
-                
-                <Dialog open={editingLocation?.id === location.id} onOpenChange={(open) => {
-                  if (!open) setEditingLocation(null)
-                }}>
-                  <DialogTrigger asChild>
+                  <div className="flex items-center space-x-2">
+                    {!location.is_primary && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSetPrimary(location)}
+                        disabled={isLoading}
+                        title="Ustaw jako główną"
+                      >
+                        <Star className="h-4 w-4" />
+                      </Button>
+                    )}
+                    
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setEditingLocation(location)}
+                      onClick={() => router.push(`/dashboard/locations/${location.id}/consumption`)}
                       disabled={isLoading}
+                      title="Zarządzaj profilem zużycia energii"
+                      className="text-blue-400 hover:text-blue-300 hover:bg-blue-950/50"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Zap className="h-4 w-4" />
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Edytuj lokalizację</DialogTitle>
-                    </DialogHeader>
-                    <LocationForm
-                      onSubmit={handleEditLocation}
-                      onCancel={() => setEditingLocation(null)}
-                      initialData={{
-                        name: location.name,
-                        city: location.city,
-                        pv_power_kwp: location.pv_power_kwp,
-                        is_primary: location.is_primary,
-                        user_id: location.user_id
-                      }}
-                      isLoading={isLoading}
-                    />
-                  </DialogContent>
-                </Dialog>
+                    
+                    <Dialog open={editingLocation?.id === location.id} onOpenChange={(open) => {
+                      if (!open) setEditingLocation(null)
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingLocation(location)}
+                          disabled={isLoading}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Edytuj lokalizację</DialogTitle>
+                        </DialogHeader>
+                        <LocationForm
+                          onSubmit={handleEditLocation}
+                          onCancel={() => setEditingLocation(null)}
+                          initialData={{
+                            name: location.name,
+                            city: location.city,
+                            pv_power_kwp: location.pv_power_kwp,
+                            is_primary: location.is_primary,
+                            user_id: location.user_id
+                          }}
+                          isLoading={isLoading}
+                        />
+                      </DialogContent>
+                    </Dialog>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDeleteLocation(location)}
-                  disabled={isLoading}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-950/50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteLocation(location)}
+                      disabled={isLoading}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-950/50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Production display section */}
+              <div className="lg:col-span-1">
+                <LocationProductionCard location={location} />
               </div>
             </div>
           </div>

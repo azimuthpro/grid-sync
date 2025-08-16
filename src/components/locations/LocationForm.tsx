@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createLocationSchema } from '@/lib/schemas'
 import type { CreateLocationSchema } from '@/lib/schemas'
-import { POLISH_CITIES } from '@/types'
+import { POLISH_CITIES_WITH_PROVINCES, getCityDisplayName } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -65,9 +65,9 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
             <SelectValue placeholder="Wybierz miasto" />
           </SelectTrigger>
           <SelectContent>
-            {POLISH_CITIES.map((city) => (
+            {Object.keys(POLISH_CITIES_WITH_PROVINCES).map((city) => (
               <SelectItem key={city} value={city}>
-                {city}
+                {getCityDisplayName(city)}
               </SelectItem>
             ))}
           </SelectContent>
