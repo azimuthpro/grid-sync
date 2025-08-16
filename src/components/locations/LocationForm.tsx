@@ -39,7 +39,7 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="name" className="block text-sm font-medium text-gray-300">
           Nazwa lokalizacji
         </label>
         <Input
@@ -49,12 +49,12 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
           className="mt-1"
         />
         {errors.name && (
-          <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
+          <p className="text-red-400 text-sm mt-1">{errors.name.message}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="city" className="block text-sm font-medium text-gray-300">
           Miasto
         </label>
         <Select
@@ -73,13 +73,13 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
           </SelectContent>
         </Select>
         {errors.city && (
-          <p className="text-red-600 text-sm mt-1">{errors.city.message}</p>
+          <p className="text-red-400 text-sm mt-1">{errors.city.message}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="pv_power_kwp" className="block text-sm font-medium text-gray-700">
-          Moc instalacji (kWp)
+        <label htmlFor="pv_power_kwp" className="block text-sm font-medium text-gray-300">
+          Moc instalacji (kWp - kilowatt peak)
         </label>
         <Input
           {...register('pv_power_kwp', { valueAsNumber: true })}
@@ -92,7 +92,7 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
           className="mt-1"
         />
         {errors.pv_power_kwp && (
-          <p className="text-red-600 text-sm mt-1">{errors.pv_power_kwp.message}</p>
+          <p className="text-red-400 text-sm mt-1">{errors.pv_power_kwp.message}</p>
         )}
       </div>
 
@@ -101,9 +101,9 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
           {...register('is_primary')}
           id="is_primary"
           type="checkbox"
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-700 bg-gray-900 rounded"
         />
-        <label htmlFor="is_primary" className="ml-2 block text-sm text-gray-700">
+        <label htmlFor="is_primary" className="ml-2 block text-sm text-gray-300">
           Ustaw jako lokalizację główną
         </label>
       </div>

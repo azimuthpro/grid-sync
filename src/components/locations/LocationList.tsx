@@ -87,9 +87,9 @@ export function LocationList({ locations }: LocationListProps) {
   if (locations.length === 0) {
     return (
       <div className="text-center py-12">
-        <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Brak lokalizacji</h3>
-        <p className="text-gray-500 mb-6">Dodaj pierwszą lokalizację, aby rozpocząć zarządzanie energią</p>
+        <MapPin className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-100 mb-2">Brak lokalizacji</h3>
+        <p className="text-gray-400 mb-6">Dodaj pierwszą lokalizację, aby rozpocząć zarządzanie energią</p>
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
@@ -108,8 +108,8 @@ export function LocationList({ locations }: LocationListProps) {
               isLoading={isLoading}
             />
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-red-800 text-sm">{error}</p>
+              <div className="bg-red-950/50 border border-red-500/20 rounded-md p-3">
+                <p className="text-red-400 text-sm">{error}</p>
               </div>
             )}
           </DialogContent>
@@ -121,13 +121,13 @@ export function LocationList({ locations }: LocationListProps) {
   return (
     <div>
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-6">
-          <p className="text-red-800 text-sm">{error}</p>
+        <div className="bg-red-950/50 border border-red-500/20 rounded-md p-3 mb-6">
+          <p className="text-red-400 text-sm">{error}</p>
         </div>
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-gray-100">
           Twoje lokalizacje ({locations.length})
         </h2>
         
@@ -155,32 +155,32 @@ export function LocationList({ locations }: LocationListProps) {
         {locations.map((location) => (
           <div
             key={location.id}
-            className={`p-6 bg-white border rounded-lg shadow-sm ${
-              location.is_primary ? 'border-blue-300 bg-blue-50/50' : 'border-gray-200'
+            className={`p-6 bg-gray-900 border rounded-lg shadow-sm ${
+              location.is_primary ? 'border-blue-500/50 bg-blue-950/30' : 'border-gray-700'
             }`}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-4">
                 <div className={`p-2 rounded-lg ${
-                  location.is_primary ? 'bg-blue-100' : 'bg-gray-100'
+                  location.is_primary ? 'bg-blue-950/50 ring-1 ring-blue-500/20' : 'bg-gray-800'
                 }`}>
                   <MapPin className={`h-5 w-5 ${
-                    location.is_primary ? 'text-blue-600' : 'text-gray-600'
+                    location.is_primary ? 'text-blue-500' : 'text-gray-400'
                   }`} />
                 </div>
                 
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-900">{location.name}</h3>
+                    <h3 className="font-semibold text-gray-100">{location.name}</h3>
                     {location.is_primary && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-950/50 text-blue-400 ring-1 ring-blue-500/20">
                         <Star className="h-3 w-3 mr-1" />
                         Główna
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-600">{location.city}</p>
-                  <p className="text-sm text-gray-500">{formatPower(location.pv_power_kwp)}</p>
+                  <p className="text-gray-300">{location.city}</p>
+                  <p className="text-sm text-gray-400">{formatPower(location.pv_power_kwp)}</p>
                 </div>
               </div>
 
@@ -234,7 +234,7 @@ export function LocationList({ locations }: LocationListProps) {
                   size="sm"
                   onClick={() => handleDeleteLocation(location)}
                   disabled={isLoading}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-950/50"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
