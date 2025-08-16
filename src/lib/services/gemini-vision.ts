@@ -10,7 +10,7 @@ const InsolationDataSchema = z.object({
   date: z.string().describe('Date extracted from the image in YYYY-MM-DD format'),
   hour: z.number().min(0).max(23).describe('Hour extracted from the image (0-23)'),
   cities: z.array(z.object({
-    name: z.string().describe('Polish city name as it appears on the map'),
+    name: z.string().describe('Polish city name'),
     province: z.string().optional().describe('Polish province/voivodeship where the city is located (if identifiable)'),
     insolation_percentage: z.number().min(0).max(100).describe('Solar insolation percentage for this city')
   })).describe('List of Polish cities with their insolation percentages')
@@ -18,6 +18,11 @@ const InsolationDataSchema = z.object({
 
 export class GeminiVisionService {
   private static readonly model = google('gemini-2.5-flash')
+  
+  // Batch processing configuration
+  private static readonly BATCH_SIZE = 10 // Process 10 images concurrently
+  private static readonly BATCH_DELAY = 1000 // 1 second delay between batches
+  private static readonly REQUEST_TIMEOUT = 30000 // 30 second timeout per request
   
   /**
    * Analyze image using Gemini 2.5 Flash and extract structured data
@@ -29,7 +34,7 @@ export class GeminiVisionService {
       
       // Create prompt for extracting data from PV insolation map
       const prompt = this.createAnalysisPrompt()
-      
+    
       // Generate structured output using Vercel AI SDK
       const { object } = await generateObject({
         model: this.model,
@@ -95,11 +100,9 @@ export class GeminiVisionService {
     IMPORTANT INSTRUCTIONS:   
     - Only include cities that you can clearly identify on the map
     - DO NOT include cities with 0% insolation values
-    - The percentage values represent solar insolation capacity (0-100%)
-    - If a city is not visible or you cannot determine its value, do not include it
+    - The percentage values represent solar insolation capacity (0-100), e.g. 10 means that the city has 10% of the potential for solar energy generation.
     - If you can identify the province/voivodeship for a city, include it
     - Use exact city names as provided in the list above
-    - Be precise with percentage values based on the color coding/legend
     - Date should be in YYYY-MM-DD format
     - Hour should be a number from 0-23
     - Skip any city showing 0% insolation percentage
@@ -181,36 +184,120 @@ export class GeminiVisionService {
   }
 
   /**
+   * Split array into batches for parallel processing
+   */
+  private static splitIntoBatches<T>(array: T[], batchSize: number): T[][] {
+    const batches: T[][] = []
+    for (let i = 0; i < array.length; i += batchSize) {
+      batches.push(array.slice(i, i + batchSize))
+    }
+    return batches
+  }
+
+  /**
+   * Process a single batch of images in parallel
+   */
+  private static async processBatch(imageUrls: string[], batchIndex: number, totalBatches: number): Promise<{ results: GeminiVisionResponse[], errors: string[] }> {
+    const batchResults: GeminiVisionResponse[] = []
+    const batchErrors: string[] = []
+    
+    console.log(`Processing batch ${batchIndex + 1}/${totalBatches} with ${imageUrls.length} images...`)
+    const batchStartTime = Date.now()
+    
+    // Process all images in this batch concurrently
+    const promises = imageUrls.map(async (url, index) => {
+      try {
+        const result = await this.analyzeImage(url)
+        console.log(`✓ Batch ${batchIndex + 1}, Image ${index + 1}/${imageUrls.length}: ${url}`)
+        return { success: true, result, error: null }
+      } catch (error) {
+        const errorMessage = `Failed to analyze image ${url}: ${error instanceof Error ? error.message : String(error)}`
+        console.error(`✗ Batch ${batchIndex + 1}, Image ${index + 1}/${imageUrls.length}: ${errorMessage}`)
+        return { success: false, result: null, error: errorMessage }
+      }
+    })
+    
+    // Wait for all images in batch to complete
+    const results = await Promise.allSettled(promises)
+    
+    // Process results
+    for (const promiseResult of results) {
+      if (promiseResult.status === 'fulfilled') {
+        const { success, result, error } = promiseResult.value
+        if (success && result) {
+          batchResults.push(result)
+        } else if (error) {
+          batchErrors.push(error)
+        }
+      } else {
+        batchErrors.push(`Promise rejected: ${promiseResult.reason}`)
+      }
+    }
+    
+    const batchTime = Date.now() - batchStartTime
+    console.log(`Batch ${batchIndex + 1}/${totalBatches} completed in ${batchTime}ms: ${batchResults.length} success, ${batchErrors.length} errors`)
+    
+    return { results: batchResults, errors: batchErrors }
+  }
+
+  /**
    * Batch analyze multiple images
    */
   static async analyzeImages(imageUrls: string[]): Promise<GeminiVisionResponse[]> {
+    const startTime = Date.now()
     const results: GeminiVisionResponse[] = []
     const errors: string[] = []
 
-    console.log(`Starting Gemini analysis for ${imageUrls.length} images...`)
+    console.log(`Starting parallel Gemini analysis for ${imageUrls.length} images...`)
+    console.log(`Configuration: ${this.BATCH_SIZE} images per batch, ${this.BATCH_DELAY}ms delay between batches`)
 
-    for (const [index, url] of imageUrls.entries()) {
+    // Split images into batches for parallel processing
+    const batches = this.splitIntoBatches(imageUrls, this.BATCH_SIZE)
+    console.log(`Processing ${batches.length} batches of up to ${this.BATCH_SIZE} images each`)
+
+    // Process each batch sequentially (but images within batch are parallel)
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex]
+      
       try {
-        console.log(`Analyzing image ${index + 1}/${imageUrls.length}: ${url}`)
-        const result = await this.analyzeImage(url)
-        results.push(result)
+        // Process current batch
+        const batchResult = await this.processBatch(batch, batchIndex, batches.length)
         
-        // Small delay to avoid rate limiting
-        if (index < imageUrls.length - 1) {
-          await this.delay(500) // 500ms delay between requests
+        // Collect results and errors
+        results.push(...batchResult.results)
+        errors.push(...batchResult.errors)
+        
+        // Calculate and log progress
+        const processedImages = (batchIndex + 1) * this.BATCH_SIZE
+        const totalProcessed = Math.min(processedImages, imageUrls.length)
+        const progress = (totalProcessed / imageUrls.length * 100).toFixed(1)
+        const elapsedTime = Date.now() - startTime
+        const estimatedTotal = (elapsedTime / totalProcessed) * imageUrls.length
+        const remainingTime = estimatedTotal - elapsedTime
+        
+        console.log(`Progress: ${totalProcessed}/${imageUrls.length} (${progress}%) - Elapsed: ${elapsedTime}ms, Estimated remaining: ${remainingTime.toFixed(0)}ms`)
+        
+        // Add delay between batches (except for the last batch)
+        if (batchIndex < batches.length - 1) {
+          console.log(`Waiting ${this.BATCH_DELAY}ms before next batch...`)
+          await this.delay(this.BATCH_DELAY)
         }
+        
       } catch (error) {
-        const errorMessage = `Failed to analyze image ${url}: ${error instanceof Error ? error.message : String(error)}`
+        const errorMessage = `Failed to process batch ${batchIndex + 1}: ${error instanceof Error ? error.message : String(error)}`
         console.error(errorMessage)
         errors.push(errorMessage)
       }
     }
 
+    const totalTime = Date.now() - startTime
+    const avgTimePerImage = results.length > 0 ? totalTime / results.length : 0
+
     if (errors.length > 0) {
       console.warn(`Gemini analysis completed with ${errors.length} errors:`, errors)
     }
 
-    console.log(`Successfully analyzed ${results.length}/${imageUrls.length} images`)
+    console.log(`Parallel analysis completed: ${results.length}/${imageUrls.length} images in ${totalTime}ms (avg: ${avgTimePerImage.toFixed(0)}ms per image)`)
     return results
   }
 
