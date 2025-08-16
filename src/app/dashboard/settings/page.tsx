@@ -41,7 +41,7 @@ export default function SettingsPage() {
           </div>
           <div className="text-center mt-6">
             <p className="text-sm text-gray-400">
-              Aplikacja w wersji: 0.1.1
+              Aplikacja w wersji: 0.1.2
             </p>
           </div>
         </div>

@@ -221,6 +221,27 @@ Keep commit messages clean and focused only on describing all uncommitted change
 
 ## Recent Updates
 
+### v0.1.2 (August 16, 2025) - Energy Consumption Profiling Enhancement
+
+**Significant architectural changes for LLM context:**
+
+- **New consumption profiling system** with complete UI redesign and enhanced data handling
+- **New API routes** for LLM context:
+  - `/api/locations/[id]/consumption` - CRUD operations for 168-point consumption profiles
+  - GET, PUT, DELETE endpoints with batch update support and validation
+- **Enhanced component architecture** with modular consumption profile components
+- **Updated data flow** for consumption management:
+  - Location selection → Consumption profile editing → Visual grid manipulation → Auto-save → Report generation
+- **New utility functions** in `lib/utils/consumption.ts` for grid data transformation and validation
+- **Extended hooks** with `useConsumptionProfile` for SWR-based profile management
+- **Enhanced form handling** with consumption profile validation schemas and batch updates
+
+**Technical integration points:**
+- ConsumptionProfileEditor component integrates with existing location management
+- New consumption profile page routing: `/dashboard/locations/[id]/consumption`
+- Database schema utilizes existing `consumption_profiles` table with optimized batch operations
+- Grid data transformation utilities for converting between UI state and database records
+
 ### v0.1.0 (August 13, 2025) - Initial Release
 
 **Complete application architecture implemented:**

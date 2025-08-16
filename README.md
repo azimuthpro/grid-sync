@@ -148,6 +148,31 @@ src/
 
 ## Version History
 
+### v0.1.2 (August 16, 2025)
+
+**Energy Consumption Profiling Enhancement**
+
+**Major Features:**
+- **168-point visual grid editor** - Complete redesign of consumption profiling with interactive 7×24 grid interface
+- **Advanced pattern management tools** - Copy day patterns, fill hour ranges, and apply default templates for efficient setup
+- **Real-time visual feedback** - Color-coded consumption intensity levels with heat map visualization
+- **Auto-save functionality** - Automatic saving with unsaved changes tracking and conflict resolution
+- **CSV export capabilities** - Export consumption patterns for external analysis and backup
+
+**User Experience Improvements:**
+- **Intuitive grid navigation** - Click-to-edit cells with keyboard navigation support
+- **Pattern manipulation tools** - Copy entire day patterns between days and fill specific hours across the week
+- **Default templates** - Pre-configured weekday/weekend patterns for quick profile setup
+- **Visual consumption indicators** - Daily totals, weekly summaries, and peak consumption highlighting
+- **Responsive toolbar** - Comprehensive editing tools with tooltips and clear visual feedback
+
+**Technical Implementation:**
+- **Modular component architecture** - Separated ConsumptionGrid, ConsumptionCell, ConsumptionToolbar, and ConsumptionProfileEditor
+- **Optimized data handling** - Efficient batch updates and grid-to-profile data transformation utilities
+- **SWR integration** - useConsumptionProfile hook with optimistic updates and automatic revalidation
+- **API enhancements** - Dedicated consumption profile endpoints with proper validation and error handling
+- **Accessibility support** - ARIA labels, keyboard shortcuts, and screen reader compatibility
+
 ### v0.1.1 (August 14, 2025)
 
 **Performance Improvements**
