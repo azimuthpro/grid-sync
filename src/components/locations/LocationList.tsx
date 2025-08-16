@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { MapPin, Edit, Trash2, Star, Plus } from 'lucide-react'
+import { MapPin, Edit, Trash2, Star, Plus, Zap } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { LocationForm } from './LocationForm'
@@ -15,6 +16,7 @@ interface LocationListProps {
 }
 
 export function LocationList({ locations }: LocationListProps) {
+  const router = useRouter()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [editingLocation, setEditingLocation] = useState<UserLocation | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -196,6 +198,17 @@ export function LocationList({ locations }: LocationListProps) {
                     <Star className="h-4 w-4" />
                   </Button>
                 )}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/locations/${location.id}/consumption`)}
+                  disabled={isLoading}
+                  title="Zarządzaj profilem zużycia energii"
+                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-950/50"
+                >
+                  <Zap className="h-4 w-4" />
+                </Button>
                 
                 <Dialog open={editingLocation?.id === location.id} onOpenChange={(open) => {
                   if (!open) setEditingLocation(null)
