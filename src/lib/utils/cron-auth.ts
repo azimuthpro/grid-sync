@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { Env } from '../Env.mjs'
 
 export class CronAuthUtils {
   /**
@@ -8,10 +9,10 @@ export class CronAuthUtils {
   static verifyCronRequest(request: NextRequest): boolean {
     // Check for Vercel cron authorization header
     const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET
+    const cronSecret = Env.CRON_SECRET
 
     // In production, verify the authorization header
-    if (process.env.NODE_ENV === 'production') {
+    if (Env.NODE_ENV === 'production') {
       if (!authHeader) {
         console.error('Missing authorization header in cron request')
         return false
@@ -38,7 +39,7 @@ export class CronAuthUtils {
     }
 
     // Log headers for debugging (in development only)
-    if (process.env.NODE_ENV === 'development') {
+    if (Env.NODE_ENV === 'development') {
       console.log('Cron request headers:', vercelHeaders)
     }
 
@@ -149,7 +150,7 @@ export class CronAuthUtils {
     console.log('IP Address:', metadata.ip)
     console.log('Test Mode:', metadata.isTest)
     console.log('Dry Run:', metadata.isDryRun)
-    console.log('Environment:', process.env.NODE_ENV)
+    console.log('Environment:', Env.NODE_ENV)
     console.log('-'.repeat(50))
   }
 

@@ -2,19 +2,20 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import type { UserLocation } from '@/types'
+import { Env } from '@/lib/Env.mjs'
 
 function getSupabaseUrl() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const url = Env.SUPABASE_URL
   if (!url) {
-    throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL')
+    throw new Error('Missing Env.SUPABASE_URL')
   }
   return url
 }
 
 function getSupabaseAnonKey() {
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const key = Env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!key) {
-    throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    throw new Error('Missing Env.NEXT_PUBLIC_SUPABASE_ANON_KEY')
   }
   return key
 }

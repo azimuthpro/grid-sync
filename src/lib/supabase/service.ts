@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { Env } from '../Env.mjs'
 
 /**
  * Create a Supabase client with service role key for server-side operations
@@ -6,8 +7,8 @@ import { createClient } from '@supabase/supabase-js'
  * Never expose the service role key to the client side
  */
 export function createSupabaseServiceClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrl = Env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = Env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error('Missing Supabase configuration for service client')
