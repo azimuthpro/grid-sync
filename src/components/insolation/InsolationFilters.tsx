@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Filter, MapPin, X } from 'lucide-react'
+import { Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useInsolationCities } from '@/hooks/useInsolation'
 import { POLISH_PROVINCES } from '@/types'
@@ -10,12 +10,10 @@ interface InsolationFiltersProps {
   onFiltersChange: (filters: {
     province?: string
     city?: string
-    hour?: string
   }) => void
   initialFilters?: {
     province?: string
     city?: string
-    hour?: string
   }
   className?: string
 }
@@ -27,7 +25,6 @@ export function InsolationFilters({
 }: InsolationFiltersProps) {
   const [province, setProvince] = useState(initialFilters.province || 'all')
   const [city, setCity] = useState(initialFilters.city || 'all')
-  const [hour, setHour] = useState(initialFilters.hour || 'all')
   const [isExpanded, setIsExpanded] = useState(false)
   const hasInitialized = useRef(false)
 
@@ -52,10 +49,9 @@ export function InsolationFilters({
     const filters = {
       province: province === 'all' ? undefined : province,
       city: city === 'all' ? undefined : city,
-      hour: hour === 'all' ? undefined : hour,
     }
     onFiltersChange(filters)
-  }, [province, city, hour, onFiltersChange])
+  }, [province, city, onFiltersChange])
 
   // Auto-apply filters with debounce (skip initial mount)
   useEffect(() => {
@@ -74,24 +70,18 @@ export function InsolationFilters({
   const handleClearFilters = () => {
     setProvince('all')
     setCity('all')
-    setHour('all')
     onFiltersChange({})
   }
 
-  const hasActiveFilters = province !== 'all' || city !== 'all' || hour !== 'all'
+  const hasActiveFilters = province !== 'all' || city !== 'all'
 
-  // Generate hour options
-  const hourOptions = Array.from({ length: 24 }, (_, i) => ({
-    value: i.toString(),
-    label: `${i.toString().padStart(2, '0')}:00`
-  }))
 
   return (
     <div className={`bg-gray-900 rounded-lg border border-gray-800 ${className}`}>
       <div className="p-4 border-b border-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Filter className="h-5 w-5 text-gray-400 mr-2" />
+            <Filter className="h-4 w-4 text-gray-400 mr-2 ml-2" />
             <h3 className="text-lg font-semibold text-gray-100">Filtry</h3>
             {hasActiveFilters && (
               <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-950/50 text-blue-400 ring-1 ring-blue-500/20">
@@ -123,12 +113,11 @@ export function InsolationFilters({
         </div>
       </div>
 
-      <div className={`p-4 ${isExpanded ? 'block' : 'hidden'} md:block`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+      <div className={`px-6 py-4 ${isExpanded ? 'block' : 'hidden'} md:block`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {/* Province filter */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              <MapPin className="h-4 w-4 inline mr-1" />
               Województwo
             </label>
             <select
@@ -168,24 +157,6 @@ export function InsolationFilters({
             )}
           </div>
 
-          {/* Hour filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Godzina
-            </label>
-            <select
-              value={hour}
-              onChange={(e) => setHour(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Wszystkie</option>
-              {hourOptions.map((hourOption) => (
-                <option key={hourOption.value} value={hourOption.value}>
-                  {hourOption.label}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
       </div>
     </div>

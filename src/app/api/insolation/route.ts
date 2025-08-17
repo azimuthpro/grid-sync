@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
     const city = searchParams.get('city')
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
-    const hour = searchParams.get('hour')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const sortBy = searchParams.get('sortBy') || 'date'
@@ -54,7 +53,7 @@ export async function GET(request: NextRequest) {
     
     // Handle chart views with SQL grouping and default date ranges
     if (viewType) {
-      return await handleChartData(supabase, viewType, { province, city, startDate, endDate, hour })
+      return await handleChartData(supabase, viewType, { province, city, startDate, endDate })
     }
     
     // Handle table view with pagination
@@ -85,17 +84,27 @@ export async function GET(request: NextRequest) {
       query = query.lte('date', endDate)
     }
 
-    if (hour !== null && hour !== '') {
-      const hourNum = parseInt(hour)
-      if (hourNum >= 0 && hourNum <= 23) {
-        query = query.eq('hour', hourNum)
-      }
-    }
 
-    // Get total count for pagination (without applying filters for now)
-    const { count } = await supabase
+    // Get total count for pagination with same filters as data query
+    let countQuery = supabase
       .from('insolation_data')
       .select('*', { count: 'exact', head: true })
+
+    // Apply the same filters to count query
+    if (province && province !== 'all') {
+      countQuery = countQuery.eq('province', province)
+    }
+    if (city && city !== 'all') {
+      countQuery = countQuery.eq('city', city)
+    }
+    if (startDate) {
+      countQuery = countQuery.gte('date', startDate)
+    }
+    if (endDate) {
+      countQuery = countQuery.lte('date', endDate)
+    }
+
+    const { count } = await countQuery
 
     // Apply sorting and pagination
     const offset = (page - 1) * limit
@@ -130,8 +139,7 @@ export async function GET(request: NextRequest) {
         province,
         city,
         startDate,
-        endDate,
-        hour
+        endDate
       },
       sorting: {
         sortBy,
@@ -157,7 +165,6 @@ async function handleChartData(
     city?: string | null
     startDate?: string | null
     endDate?: string | null
-    hour?: string | null
   }
 ) {
   const now = new Date()
@@ -225,12 +232,6 @@ async function handleChartData(
       if (filters.city && filters.city !== 'all') {
         baseQuery = baseQuery.eq('city', filters.city)
       }
-      if (filters.hour !== null && filters.hour !== '') {
-        const hourNum = parseInt(filters.hour!)
-        if (hourNum >= 0 && hourNum <= 23) {
-          baseQuery = baseQuery.eq('hour', hourNum)
-        }
-      }
       
       const { data: rawData, error } = await baseQuery
       if (error) throw error
@@ -281,12 +282,6 @@ async function handleChartData(
       if (filters.city && filters.city !== 'all') {
         baseQuery = baseQuery.eq('city', filters.city)
       }
-      if (filters.hour !== null && filters.hour !== '') {
-        const hourNum = parseInt(filters.hour!)
-        if (hourNum >= 0 && hourNum <= 23) {
-          baseQuery = baseQuery.eq('hour', hourNum)
-        }
-      }
       
       const { data: rawData, error } = await baseQuery
       if (error) throw error
@@ -332,12 +327,6 @@ async function handleChartData(
       if (filters.city && filters.city !== 'all') {
         baseQuery = baseQuery.eq('city', filters.city)
       }
-      if (filters.hour !== null && filters.hour !== '') {
-        const hourNum = parseInt(filters.hour!)
-        if (hourNum >= 0 && hourNum <= 23) {
-          baseQuery = baseQuery.eq('hour', hourNum)
-        }
-      }
       
       const { data: rawData, error } = await baseQuery
       if (error) throw error
@@ -382,8 +371,7 @@ async function handleChartData(
       dateRange: { startDate, endDate },
       filters: {
         province: filters.province,
-        city: filters.city,
-        hour: filters.hour
+        city: filters.city
       }
     })
     
@@ -432,49 +420,29 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    if (action === 'getStatistics') {
+    if (action === 'getLatestDate') {
       const supabase = createSupabaseServiceClient()
       
-      // Get basic statistics
-      const { count: totalRecords } = await supabase
-        .from('insolation_data')
-        .select('*', { count: 'exact', head: true })
-
-      // Get date range
-      const { data: dateRange } = await supabase
+      const { data: latestRecord, error } = await supabase
         .from('insolation_data')
         .select('date')
         .order('date', { ascending: false })
         .limit(1)
+        .single()
 
-      const { data: oldestDate } = await supabase
-        .from('insolation_data')
-        .select('date')
-        .order('date', { ascending: true })
-        .limit(1)
-
-      // Get unique cities and provinces
-      const { data: cities } = await supabase
-        .from('insolation_data')
-        .select('city')
-
-      const { data: provinces } = await supabase
-        .from('insolation_data')
-        .select('province')
-
-      const uniqueCities = [...new Set(cities?.map(item => item.city) || [])]
-      const uniqueProvinces = [...new Set(provinces?.map(item => item.province) || [])]
+      if (error) {
+        console.error('Database query error:', error)
+        return NextResponse.json(
+          { error: 'Failed to fetch latest date' },
+          { status: 500 }
+        )
+      }
 
       return NextResponse.json({
-        totalRecords: totalRecords || 0,
-        uniqueCities: uniqueCities.length,
-        uniqueProvinces: uniqueProvinces.length,
-        latestDate: dateRange?.[0]?.date || null,
-        oldestDate: oldestDate?.[0]?.date || null,
-        availableProvinces: uniqueProvinces.sort(),
-        availableCities: uniqueCities.sort()
+        latestDate: latestRecord?.date || new Date().toISOString().split('T')[0]
       })
     }
+
 
     return NextResponse.json(
       { error: 'Invalid action' },

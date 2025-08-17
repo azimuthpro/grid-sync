@@ -10,16 +10,14 @@ import {
   Tooltip, 
   ResponsiveContainer,
   BarChart,
-  Bar,
-  ReferenceLine
+  Bar
 } from 'recharts'
-import { BarChart3, LineChart as LineChartIcon, Calendar } from 'lucide-react'
+import { BarChart3, LineChart as LineChartIcon, ChartLine } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { InsolationData } from '@/types'
 
 interface InsolationChartProps {
   data: InsolationData[]
-  title?: string
   className?: string
   showComparison?: boolean
   viewType?: 'hourly' | 'daily' | 'monthly'
@@ -31,7 +29,6 @@ type ChartType = 'line' | 'bar'
 
 const InsolationChartComponent = function InsolationChart({ 
   data, 
-  title = 'Dane nasłonecznienia',
   className = '',
   viewType = 'daily',
   onViewTypeChange,
@@ -94,19 +91,6 @@ const InsolationChartComponent = function InsolationChart({
     })
   }, [data, viewType])
 
-  // Memoized statistics calculation
-  const statistics = useMemo(() => {
-    if (processedData.length === 0) {
-      return { average: 0, max: 0, min: 0 }
-    }
-    
-    const insolationValues = processedData.map(item => (item as Record<string, unknown>).insolation as number)
-    return {
-      average: insolationValues.reduce((sum, val) => sum + val, 0) / insolationValues.length,
-      max: Math.max(...insolationValues),
-      min: Math.min(...insolationValues)
-    }
-  }, [processedData])
 
   // Early return after all hooks
   if (!data || data.length === 0) {
@@ -138,7 +122,7 @@ const InsolationChartComponent = function InsolationChart({
             <p className="text-gray-400 text-sm">Dni: {data.dates}</p>
           )}
           {data.count && (
-            <p className="text-gray-400 text-sm">Pomiarów: {data.count}</p>
+            <p className="text-gray-400 text-sm">Pomiarów &gt; 0%: {data.count}</p>
           )}
         </div>
       )
@@ -149,8 +133,11 @@ const InsolationChartComponent = function InsolationChart({
   return (
     <div className={`bg-gray-900 rounded-lg border border-gray-800 ${className}`}>
       <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-100">{title}</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <ChartLine className="h-4 w-4 text-gray-400 mr-2" />
+            <h3 className="text-lg font-semibold text-gray-100">Wykres</h3>
+          </div>
           
           <div className="flex items-center space-x-2">
             {/* View type selector */}
@@ -212,21 +199,6 @@ const InsolationChartComponent = function InsolationChart({
           </div>
         </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="text-center p-3 bg-gray-800 rounded-lg">
-            <p className="text-sm text-gray-400">Średnie</p>
-            <p className="text-lg font-bold text-blue-400">{statistics.average.toFixed(1)}%</p>
-          </div>
-          <div className="text-center p-3 bg-gray-800 rounded-lg">
-            <p className="text-sm text-gray-400">Maksimum</p>
-            <p className="text-lg font-bold text-emerald-400">{statistics.max.toFixed(1)}%</p>
-          </div>
-          <div className="text-center p-3 bg-gray-800 rounded-lg">
-            <p className="text-sm text-gray-400">Minimum</p>
-            <p className="text-lg font-bold text-red-400">{statistics.min.toFixed(1)}%</p>
-          </div>
-        </div>
       </div>
 
       <div className="p-6">
@@ -256,12 +228,6 @@ const InsolationChartComponent = function InsolationChart({
                   tickFormatter={(value) => `${value}%`}
                 />
                 <Tooltip content={CustomTooltip} />
-                <ReferenceLine 
-                  y={statistics.average} 
-                  stroke="#3B82F6" 
-                  strokeDasharray="5 5"
-                  strokeOpacity={0.7}
-                />
                 <Line 
                   type="monotone" 
                   dataKey="insolation" 
@@ -294,12 +260,6 @@ const InsolationChartComponent = function InsolationChart({
                   tickFormatter={(value) => `${value}%`}
                 />
                 <Tooltip content={CustomTooltip} />
-                <ReferenceLine 
-                  y={statistics.average} 
-                  stroke="#3B82F6" 
-                  strokeDasharray="5 5"
-                  strokeOpacity={0.7}
-                />
                 <Bar 
                   dataKey="insolation" 
                   fill="#3B82F6"
@@ -308,33 +268,6 @@ const InsolationChartComponent = function InsolationChart({
               </BarChart>
             )}
           </ResponsiveContainer>
-        </div>
-
-        {/* Data info */}
-        <div className="mt-4 p-3 bg-gray-800 rounded-lg">
-          <div className="flex items-center justify-between text-sm text-gray-400">
-            <div className="flex items-center">
-              <Calendar className="h-4 w-4 mr-1" />
-              <span>Punktów danych: {processedData.length}</span>
-              {isLoading && (
-                <span className="ml-2 animate-pulse">Ładowanie...</span>
-              )}
-            </div>
-            {viewType === 'hourly' && data.length > 0 && (
-              <span>
-                Zakres: {data[0]?.date} {data.length > 1 ? `- ${data[data.length - 1]?.date}` : ''}
-              </span>
-            )}
-            {viewType === 'daily' && (
-              <span>Ostatnie {processedData.length} dni</span>
-            )}
-            {viewType === 'monthly' && (
-              <span>Ostatnie 12 miesięcy</span>
-            )}
-            <span className="text-blue-400">
-              Średnia linia: {statistics.average.toFixed(1)}%
-            </span>
-          </div>
         </div>
       </div>
     </div>

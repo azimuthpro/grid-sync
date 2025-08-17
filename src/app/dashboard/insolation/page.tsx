@@ -1,18 +1,20 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { Sun, MapPin, Database, RefreshCw } from 'lucide-react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { RefreshCw, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { InsolationFilters } from '@/components/insolation/InsolationFilters'
 import { InsolationChart } from '@/components/insolation/InsolationChart'
 import { InsolationDataTable } from '@/components/insolation/InsolationDataTable'
-import { useInsolation, useInsolationChart, useInsolationStatistics } from '@/hooks/useInsolation'
+import { useInsolation, useInsolationChart, useLatestDate } from '@/hooks/useInsolation'
+import type { InsolationData } from '@/types'
 
 interface InsolationFilters extends Record<string, string | undefined> {
   province?: string
   city?: string
-  hour?: string
 }
+
+type TimeRange = '24h' | '3d' | '7d' | '1m'
 
 export default function InsolationPage() {
   const [filters, setFilters] = useState<InsolationFilters>({})
@@ -20,6 +22,53 @@ export default function InsolationPage() {
   const [sortBy, setSortBy] = useState('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [chartViewType, setChartViewType] = useState<'hourly' | 'daily' | 'monthly'>('daily')
+  const [tableTimeRange, setTableTimeRange] = useState<TimeRange>('24h')
+  const [accumulatedTableData, setAccumulatedTableData] = useState<InsolationData[]>([])
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const shouldResetData = useRef(false)
+
+  // Get latest date from database
+  const { latestDate, fetchLatestDate } = useLatestDate()
+
+  // Fetch latest date on component mount
+  useEffect(() => {
+    fetchLatestDate()
+  }, [fetchLatestDate])
+
+  // Calculate date range for table based on selected time range and latest date from DB
+  const tableFilters = useMemo(() => {
+    // Use latest date from database or fallback to today
+    const referenceDate = latestDate ? new Date(latestDate) : new Date()
+    let startDate: string
+    const endDate = referenceDate.toISOString().split('T')[0]
+
+    switch (tableTimeRange) {
+      case '24h':
+        startDate = new Date(referenceDate.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        break
+      case '3d':
+        startDate = new Date(referenceDate.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        break
+      case '7d':
+        startDate = new Date(referenceDate.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        break
+      case '1m':
+        startDate = new Date(referenceDate.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        break
+      default:
+        startDate = new Date(referenceDate.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    }
+
+    return {
+      ...filters,
+      startDate,
+      endDate,
+      page,
+      limit: 50,
+      sortBy,
+      sortOrder
+    }
+  }, [filters, tableTimeRange, page, sortBy, sortOrder, latestDate])
 
   // Separate data fetching for table (with pagination)
   const { 
@@ -28,13 +77,8 @@ export default function InsolationPage() {
     error: tableError, 
     isLoading: tableLoading, 
     mutate: mutateTable 
-  } = useInsolation({
-    ...filters,
-    page,
-    limit: 50,
-    sortBy,
-    sortOrder
-  })
+  } = useInsolation(tableFilters)
+
 
   // Separate data fetching for chart (no pagination, grouped by backend)
   const {
@@ -44,35 +88,77 @@ export default function InsolationPage() {
     mutate: mutateChart
   } = useInsolationChart(chartViewType, filters)
 
-  const { 
-    statistics, 
-    fetchStatistics
-  } = useInsolationStatistics()
-
-  // Fetch statistics on component mount
-  useEffect(() => {
-    fetchStatistics()
-  }, [fetchStatistics])
 
   const handleFiltersChange = (newFilters: InsolationFilters) => {
     setFilters(newFilters)
     setPage(1) // Reset to first page when filters change
+    shouldResetData.current = true // Mark for data reset
+    setAccumulatedTableData([]) // Clear accumulated data
   }
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage)
+  const handleTableTimeRangeChange = (timeRange: TimeRange) => {
+    setTableTimeRange(timeRange)
+    setPage(1)
+    shouldResetData.current = true // Mark for data reset
+    setAccumulatedTableData([]) // Clear accumulated data when time range changes
   }
+
+  const handleLoadMore = useCallback(async () => {
+    if (!pagination?.hasNextPage || isLoadingMore || tableLoading) return
+    
+    setIsLoadingMore(true)
+    setPage(prev => prev + 1)
+  }, [pagination?.hasNextPage, isLoadingMore, tableLoading])
+
+  // Accumulate data when new page loads
+  useEffect(() => {
+    // Don't process data while loading to avoid race conditions
+    if (tableLoading) {
+      return
+    }
+    
+    if (!tableData || tableData.length === 0) {
+      // If we were loading more and got no data, stop loading
+      if (isLoadingMore) {
+        setIsLoadingMore(false)
+      }
+      return
+    }
+
+    // If we need to reset data (due to filter/sort/time range change) or it's the first page and we have no accumulated data
+    if (shouldResetData.current || (page === 1 && accumulatedTableData.length === 0)) {
+      setAccumulatedTableData(tableData)
+      shouldResetData.current = false // Reset the flag
+    } else {
+      // Append new data to existing accumulated data
+      setAccumulatedTableData(prev => {
+        // Prevent duplicates by checking if data is already included
+        const existingIds = new Set(prev.map(item => `${item.date}-${item.hour}-${item.city}`))
+        const newData = tableData.filter(item => !existingIds.has(`${item.date}-${item.hour}-${item.city}`))
+        return newData.length > 0 ? [...prev, ...newData] : prev
+      })
+    }
+
+    // Set loading to false after data is processed successfully
+    if (isLoadingMore) {
+      setIsLoadingMore(false)
+    }
+  }, [tableData, page, tableLoading, isLoadingMore, accumulatedTableData.length])
 
   const handleSortChange = (field: string, order: 'asc' | 'desc') => {
     setSortBy(field)
     setSortOrder(order)
     setPage(1) // Reset to first page when sorting changes
+    shouldResetData.current = true // Mark for data reset
+    setAccumulatedTableData([]) // Clear accumulated data
   }
 
   const handleRefresh = () => {
+    setPage(1)
+    shouldResetData.current = true // Mark for data reset
+    setAccumulatedTableData([])
     mutateTable()
     mutateChart()
-    fetchStatistics()
   }
 
   // Create a stable chart key to prevent unnecessary remounts
@@ -90,7 +176,7 @@ export default function InsolationPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-100">Dane nasłonecznienia</h1>
+            <h1 className="text-2xl font-bold text-gray-100">Nasłonecznienie</h1>
           </div>
           
           <div className="flex items-center space-x-3">
@@ -107,65 +193,6 @@ export default function InsolationPage() {
         </div>
       </div>
 
-      {/* Statistics cards */}
-      {statistics && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-950/50 rounded-lg ring-1 ring-blue-500/20">
-                <Database className="h-6 w-6 text-blue-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Łączne pomiary</p>
-                <p className="text-2xl font-bold text-gray-100">
-                  {statistics.totalRecords.toLocaleString('pl-PL')}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
-            <div className="flex items-center">
-              <div className="p-2 bg-emerald-950/50 rounded-lg ring-1 ring-emerald-500/20">
-                <MapPin className="h-6 w-6 text-emerald-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Miasta</p>
-                <p className="text-2xl font-bold text-gray-100">{statistics.uniqueCities}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
-            <div className="flex items-center">
-              <div className="p-2 bg-amber-950/50 rounded-lg ring-1 ring-amber-500/20">
-                <MapPin className="h-6 w-6 text-amber-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Województwa</p>
-                <p className="text-2xl font-bold text-gray-100">{statistics.uniqueProvinces}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-950/50 rounded-lg ring-1 ring-purple-500/20">
-                <Sun className="h-6 w-6 text-purple-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Ostatnie dane</p>
-                <p className="text-lg font-bold text-gray-100">
-                  {statistics.latestDate ? 
-                    new Date(statistics.latestDate).toLocaleDateString('pl-PL') : 
-                    'Brak danych'
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Filters */}
       <div className="mb-8">
@@ -207,7 +234,7 @@ export default function InsolationPage() {
       )}
 
       {/* Chart and Table */}
-      {!error && (chartData.length > 0 || tableData.length > 0) && (
+      {!error && (chartData.length > 0 || accumulatedTableData.length > 0) && (
         <>
           {/* Chart Section */}
           {chartData.length > 0 && (
@@ -217,28 +244,31 @@ export default function InsolationPage() {
                 data={chartData}
                 viewType={chartViewType}
                 onViewTypeChange={setChartViewType}
-                title="Wykres nasłonecznienia"
                 isLoading={chartLoading}
               />
             </div>
           )}
 
           {/* Table Section */}
-          {!isLoading && tableData.length > 0 && (
+          {!isLoading && (
             <InsolationDataTable
-              data={tableData}
-              pagination={pagination}
-              onPageChange={handlePageChange}
+              data={accumulatedTableData.length > 0 ? accumulatedTableData : (tableData || [])}
+              hasMore={pagination?.hasNextPage || false}
+              isLoadingMore={isLoadingMore}
+              onLoadMore={handleLoadMore}
+              onTimeRangeChange={handleTableTimeRangeChange}
+              timeRange={tableTimeRange}
               onSortChange={handleSortChange}
               sorting={{ sortBy, sortOrder }}
               filters={filters}
+              currentDate={new Date().toISOString().split('T')[0]}
             />
           )}
         </>
       )}
 
       {/* No data message */}
-      {!isLoading && !error && chartData.length === 0 && tableData.length === 0 && (
+      {!isLoading && !error && chartData.length === 0 && accumulatedTableData.length === 0 && (
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-12 text-center">
           <Sun className="h-16 w-16 text-gray-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-100 mb-2">Brak danych</h3>

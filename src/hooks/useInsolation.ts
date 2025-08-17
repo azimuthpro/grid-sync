@@ -5,11 +5,12 @@ import type { InsolationData } from '@/types'
 interface InsolationFilters {
   province?: string
   city?: string
-  hour?: string
   page?: number
   limit?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  startDate?: string
+  endDate?: string
 }
 
 interface InsolationResponse {
@@ -36,15 +37,6 @@ interface InsolationChartResponse {
   filters: InsolationFilters
 }
 
-interface InsolationStatistics {
-  totalRecords: number
-  uniqueCities: number
-  uniqueProvinces: number
-  latestDate: string | null
-  oldestDate: string | null
-  availableProvinces: string[]
-  availableCities: string[]
-}
 
 const fetcher = async (url: string): Promise<InsolationResponse> => {
   const response = await fetch(url)
@@ -149,47 +141,6 @@ export function useInsolationCities(province?: string) {
   }
 }
 
-export function useInsolationStatistics() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [statistics, setStatistics] = useState<InsolationStatistics | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchStatistics = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const response = await fetch('/api/insolation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'getStatistics'
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch statistics')
-      }
-
-      const data = await response.json()
-      setStatistics(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch statistics')
-      setStatistics(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  return {
-    statistics,
-    isLoading,
-    error,
-    fetchStatistics
-  }
-}
 
 export function useInsolationChart(viewType: 'hourly' | 'daily' | 'monthly', filters: InsolationFilters = {}) {
   const searchParams = new URLSearchParams()
@@ -230,6 +181,49 @@ export function useInsolationChart(viewType: 'hourly' | 'daily' | 'monthly', fil
     error,
     isLoading,
     mutate
+  }
+}
+
+export function useLatestDate() {
+  const [latestDate, setLatestDate] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchLatestDate = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/insolation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'getLatestDate'
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch latest date')
+      }
+
+      const data = await response.json()
+      setLatestDate(data.latestDate)
+      return data.latestDate
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch latest date')
+      throw err
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  return {
+    latestDate,
+    isLoading,
+    error,
+    fetchLatestDate
   }
 }
 

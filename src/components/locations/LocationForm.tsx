@@ -49,7 +49,7 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
         <Input
           {...register('name')}
           id="name"
-          placeholder="np. Dom, Biuro, Magazyn"
+          placeholder="np. Biuro, Magazyn, Dom"
           className="mt-1"
         />
         {errors.name && (
@@ -59,7 +59,7 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
 
       <div>
         <label htmlFor="city" className="block text-sm font-medium text-gray-300">
-          Miasto
+          Miasto / Województwo
         </label>
         <Select
           value={selectedCity}
@@ -101,7 +101,7 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
       </div>
 
       {/* Advanced Settings */}
-      <div className="border-t border-gray-700 pt-6">
+      <div className="">
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
