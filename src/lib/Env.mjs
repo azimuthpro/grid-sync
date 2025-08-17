@@ -16,7 +16,6 @@ export const Env = createEnv({
     SUPABASE_ANON_KEY: z.string(),
     SUPABASE_SERVICE_ROLE_KEY: z.string(),
     SUPABASE_URL: z.string(),
-    VERCEL_OIDC_TOKEN: z.string(),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
@@ -38,6 +37,5 @@ export const Env = createEnv({
     SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     SUPABASE_URL: process.env.SUPABASE_URL,
-    VERCEL_OIDC_TOKEN: process.env.VERCEL_OIDC_TOKEN,
   },
 });

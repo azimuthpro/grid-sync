@@ -1,92 +1,73 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { Env } from './lib/Env.mjs'
+import { createSupabaseServerClient } from './lib/supabase/client'
 
-function getSupabaseUrl() {
-  const url = Env.SUPABASE_URL
-  if (!url) {
-    throw new Error('Missing Env.SUPABASE_URL')
-  }
-  return url
+// Pre-compiled route patterns for O(1) lookup performance
+const PUBLIC_ROUTES = new Set(['/login', '/register', '/api/cron'])
+const API_PREFIX = '/api'
+const DASHBOARD_PREFIX = '/dashboard'
+const ROOT_PATH = '/'
+
+// Helper functions for route classification
+function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_ROUTES.has(pathname) || 
+         PUBLIC_ROUTES.has(pathname.split('/').slice(0, 3).join('/'))
 }
 
-function getSupabaseAnonKey() {
-  const key = Env.SUPABASE_ANON_KEY
-  if (!key) {
-    throw new Error('Missing Env.SUPABASE_ANON_KEY')
-  }
-  return key
+function isProtectedRoute(pathname: string): boolean {
+  return pathname.startsWith(DASHBOARD_PREFIX) ||
+         (pathname.startsWith(API_PREFIX) && !pathname.startsWith('/api/cron')) ||
+         pathname === ROOT_PATH
 }
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+  const { pathname } = request.nextUrl
+  
+  const isPublic = isPublicRoute(pathname)
+  const isProtected = isProtectedRoute(pathname)
+
+  // Early return for routes that don't need authentication handling
+  if (!isPublic && !isProtected) {
+    return NextResponse.next()
+  }
+
+  // Create response object for cookie handling
+  const response = NextResponse.next({ request })
+
+  // Create Supabase client with optimized cookie handling
+  const supabase = createSupabaseServerClient({
+    getAll: () => request.cookies.getAll(),
+    set: (name: string, value: string, options?: Record<string, unknown>) => {
+      request.cookies.set(name, value)
+      response.cookies.set(name, value, options)
+    }
   })
 
-  const supabase = createServerClient(
-    getSupabaseUrl(),
-    getSupabaseAnonKey(),
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      }
+  // Get user authentication status
+  let user = null
+  try {
+    const { data: { user: authUser }, error } = await supabase.auth.getUser()
+    
+    if (error && error.message !== 'Auth session missing!' && isProtected) {
+      console.error('Middleware: Authentication error:', error)
     }
-  )
-
-  // This will refresh session if expired - required for Server Components
-  const {
-    data: { user },
-    error
-  } = await supabase.auth.getUser()
-  
-  if (error) {
-    console.error('Middleware: błąd pobierania użytkownika:', error)
+    
+    user = authUser
+  } catch (error) {
+    if (isProtected) {
+      console.error('Middleware: Authentication error:', error)
+    }
   }
 
-  // Define public routes that don't require authentication
-  const publicRoutes = ['/login', '/register', '/api/cron']
-  const isPublicRoute = publicRoutes.some(route => 
-    request.nextUrl.pathname.startsWith(route)
-  )
-
-  // Define protected routes that require authentication
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
-                          (request.nextUrl.pathname.startsWith('/api') && !request.nextUrl.pathname.startsWith('/api/cron')) ||
-                          request.nextUrl.pathname === '/'
-
-  // If user is not authenticated and trying to access protected route
-  if (!user && isProtectedRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  // Handle authentication redirects
+  if (!user && isProtected) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // If user is authenticated and trying to access auth pages
-  if (user && isPublicRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+  if (user && (isPublic || pathname === ROOT_PATH)) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // If user is authenticated and on root, redirect to dashboard
-  if (user && request.nextUrl.pathname === '/') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
-
-  return supabaseResponse
+  return response
 }
 
 export const config = {

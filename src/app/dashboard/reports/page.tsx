@@ -1,6 +1,6 @@
 'use client'
 
-import { FileText, Download, Calendar } from 'lucide-react'
+import { FileText } from 'lucide-react'
 
 export default function ReportsPage() {
   return (
@@ -17,24 +17,6 @@ export default function ReportsPage() {
           <FileText className="h-16 w-16 text-gray-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-100 mb-2">Generator raportów</h3>
           <p className="text-gray-400 mb-6">Ta funkcjonalność jest w trakcie implementacji</p>
-          
-          <div className="bg-blue-950/50 border border-blue-500/20 rounded-lg p-4 max-w-md mx-auto">
-            <h4 className="font-medium text-blue-400 mb-2">Planowane funkcje:</h4>
-            <ul className="text-sm text-blue-300 space-y-1">
-              <li className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
-                Wybór zakresu dat
-              </li>
-              <li className="flex items-center">
-                <FileText className="h-4 w-4 mr-2" />
-                Obliczenia bilansu energetycznego
-              </li>
-              <li className="flex items-center">
-                <Download className="h-4 w-4 mr-2" />
-                Export do CSV
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>

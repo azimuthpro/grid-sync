@@ -76,8 +76,16 @@ export class GeminiVisionService {
    */
   private static createAnalysisPrompt(): string {
     const cityList = Object.keys(POLISH_CITIES_WITH_PROVINCES).join(', ')
+    const currentDate = new Date()
+    const polishDaysOfWeek = ['niedziela', 'poniedziałek', 'wtorek', 'środa', 'czwartek', 'piątek', 'sobota']
     
     return `You are analyzing a Polish meteorological map showing photovoltaic (PV) solar energy generation capacity as percentages.
+
+    IMPORTANT TEMPORAL CONTEXT:
+    - The images show ACTUAL dates (today or past dates when the forecast was made)
+    - However, the measurements/forecasts are for TODAY and FUTURE days
+    - Current actual date: ${currentDate.toISOString().split('T')[0]} (${polishDaysOfWeek[currentDate.getDay()]})
+    - Polish days of week: ${polishDaysOfWeek.join(', ')}
 
     The image shows:
     1. A map of Poland with cities marked
@@ -87,20 +95,39 @@ export class GeminiVisionService {
     5. Legend or scale showing percentage values
 
     Your task:
-    1. Extract the DATE from the image (format: YYYY-MM-DD)
-    2. Extract the HOUR from the image (0-23 format)
-    3. For each of these Polish cities that you can identify on the map, extract the solar insolation percentage and province if visible:
+    1. First, extract the DATE from the image and identify its corresponding Polish weekday name
+    2. Then, look for the weekday name displayed on the image to identify the actual measurement date
+    3. Extract the HOUR from the image (0-23 format)
+    4. For each of these Polish cities that you can identify on the map, extract the solar insolation percentage and province if visible:
 
     Cities to look for: ${cityList}
 
     Polish Provinces (Voivodeships): Dolnośląskie, Kujawsko-Pomorskie, Lubelskie, Lubuskie, Łódzkie, Małopolskie, Mazowieckie, Opolskie, Podkarpackie, Podlaskie, Pomorskie, Śląskie, Świętokrzyskie, Warmińsko-Mazurskie, Wielkopolskie, Zachodniopomorskie
 
-    Actual year is ${new Date().getFullYear()}. Actual month is ${new Date().getMonth() + 1}. Actual day is ${new Date().getDate()}.
+    Polish days of week: ${polishDaysOfWeek.join(', ')}
+
+    Current reference: Year ${currentDate.getFullYear()}, Month ${currentDate.getMonth() + 1}, Day ${currentDate.getDate()}.
+
+    WEEKDAY IDENTIFICATION PROCESS:
+    1. Look for "Start: <date>" marking on the image - this indicates TODAY's date (the starting reference point)
+    2. Extract any other dates shown on the image (YYYY-MM-DD format)
+    3. Calculate which Polish weekday these dates correspond to using the days: ${polishDaysOfWeek.join(', ')}
+    4. Look for the actual weekday name displayed on the image (may be different from calculated weekday)
+    5. Use the weekday name from the image to determine the actual measurement date
+    6. The measurement date might be: TODAY (Start date), TOMORROW (Start + 1 day), or DAY AFTER TOMORROW (Start + 2 days)
+    7. Cross-reference with current date: ${currentDate.toISOString().split('T')[0]} (${polishDaysOfWeek[currentDate.getDay()]})
+    8. The final date should reflect the measurement period, not necessarily the image creation date
 
     IMPORTANT INSTRUCTIONS:   
     - Only include cities that you can clearly identify on the map
     - DO NOT include cities with 0% insolation values
-    - The percentage values represent solar insolation capacity (0-100), e.g. 10 means that the city has 10% of the potential for solar energy generation.
+    - The percentage values represent solar insolation capacity (0-100), e.g. 10 means that the city has 10% of the potential for solar energy generation
+    - Look for "Start: <date>" marking on the image to identify the starting date (today)
+    - Remember: image date may be actual past date, but forecast data is for current/future periods
+    - The forecast measurement date can only be: today (start date), tomorrow (start + 1), or day after tomorrow (start + 2)
+    - Cross-reference the calculated weekday with the weekday name shown on the image
+    - If weekday names differ, prioritize the weekday shown on the image for determining measurement date
+    - Determine if the displayed weekday corresponds to today, tomorrow, or day after tomorrow relative to the start date
     - If you can identify the province/voivodeship for a city, include it
     - Use exact city names as provided in the list above
     - Date should be in YYYY-MM-DD format
