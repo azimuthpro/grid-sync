@@ -148,6 +148,28 @@ src/
 
 ## Version History
 
+### v0.1.5 (August 17, 2025)
+
+**Advanced Analytics and Performance Enhancements**
+
+**Major Features:**
+- **Enhanced insolation data analytics** - Improved data filtering capabilities and table performance optimization for better user experience
+- **Advanced consumption tracking integration** - Enhanced dashboard with comprehensive consumption analytics and visual data representation
+- **Custom system efficiency configuration** - Implemented configurable efficiency settings for PV installations allowing personalized performance calculations
+- **Modernized dashboard UI** - Complete visual design overhaul with enhanced navigation and improved user interface components
+
+**User Experience Improvements:**
+- **Optimized data visualization** - Faster loading times and smoother interactions with large datasets
+- **Enhanced system metadata** - Improved UI components with better performance and user feedback
+- **Advanced filtering capabilities** - More precise data filtering options for better data analysis
+- **Streamlined navigation** - Modernized dashboard layout with improved visual hierarchy and accessibility
+
+**Technical Enhancements:**
+- **Performance optimization** - Enhanced table performance and data processing efficiency
+- **Component modernization** - Updated system components with improved performance characteristics
+- **Enhanced environment configuration** - Better type safety and configuration management
+- **UI metadata improvements** - Optimized rendering and component state management
+
 ### v0.1.4 (August 16, 2025)
 
 **Performance Optimizations and Data Management Improvements**
