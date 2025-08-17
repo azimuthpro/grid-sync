@@ -1,18 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Sun, BarChart3, Database, RefreshCw } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Sun, MapPin, Database, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { InsolationFilters } from '@/components/insolation/InsolationFilters'
 import { InsolationChart } from '@/components/insolation/InsolationChart'
 import { InsolationDataTable } from '@/components/insolation/InsolationDataTable'
-import { useInsolation, useInsolationStatistics } from '@/hooks/useInsolation'
+import { useInsolation, useInsolationChart, useInsolationStatistics } from '@/hooks/useInsolation'
 
 interface InsolationFilters extends Record<string, string | undefined> {
   province?: string
   city?: string
-  startDate?: string
-  endDate?: string
   hour?: string
 }
 
@@ -21,13 +19,15 @@ export default function InsolationPage() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [chartViewType, setChartViewType] = useState<'hourly' | 'daily' | 'monthly'>('daily')
 
+  // Separate data fetching for table (with pagination)
   const { 
-    data, 
+    data: tableData, 
     pagination, 
-    error, 
-    isLoading, 
-    mutate 
+    error: tableError, 
+    isLoading: tableLoading, 
+    mutate: mutateTable 
   } = useInsolation({
     ...filters,
     page,
@@ -35,6 +35,14 @@ export default function InsolationPage() {
     sortBy,
     sortOrder
   })
+
+  // Separate data fetching for chart (no pagination, grouped by backend)
+  const {
+    data: chartData,
+    error: chartError,
+    isLoading: chartLoading,
+    mutate: mutateChart
+  } = useInsolationChart(chartViewType, filters)
 
   const { 
     statistics, 
@@ -62,9 +70,20 @@ export default function InsolationPage() {
   }
 
   const handleRefresh = () => {
-    mutate()
+    mutateTable()
+    mutateChart()
     fetchStatistics()
   }
+
+  // Create a stable chart key to prevent unnecessary remounts
+  const chartKey = useMemo(() => {
+    const filterKey = JSON.stringify(filters)
+    return `chart-${chartViewType}-${filterKey}-${chartData.length}`
+  }, [filters, chartViewType, chartData.length])
+
+  // Combined error and loading states
+  const error = tableError || chartError
+  const isLoading = tableLoading
 
   return (
     <div className="p-8">
@@ -108,7 +127,7 @@ export default function InsolationPage() {
           <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
             <div className="flex items-center">
               <div className="p-2 bg-emerald-950/50 rounded-lg ring-1 ring-emerald-500/20">
-                <Sun className="h-6 w-6 text-emerald-500" />
+                <MapPin className="h-6 w-6 text-emerald-500" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-400">Miasta</p>
@@ -120,7 +139,7 @@ export default function InsolationPage() {
           <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
             <div className="flex items-center">
               <div className="p-2 bg-amber-950/50 rounded-lg ring-1 ring-amber-500/20">
-                <BarChart3 className="h-6 w-6 text-amber-500" />
+                <MapPin className="h-6 w-6 text-amber-500" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-400">Województwa</p>
@@ -165,39 +184,61 @@ export default function InsolationPage() {
         </div>
       )}
 
-      {/* Loading state */}
+      {/* Loading state with skeleton */}
       {isLoading && (
-        <div className="mb-8 bg-gray-900 rounded-lg border border-gray-800 p-8">
-          <div className="flex items-center justify-center">
-            <RefreshCw className="h-6 w-6 animate-spin text-blue-500 mr-3" />
-            <span className="text-gray-400">Ładowanie danych...</span>
+        <>
+          <div className="mb-8 bg-gray-900 rounded-lg border border-gray-800 p-8">
+            <div className="flex items-center justify-center">
+              <RefreshCw className="h-6 w-6 animate-spin text-blue-500 mr-3" />
+              <span className="text-gray-400">Ładowanie danych...</span>
+            </div>
           </div>
-        </div>
+          
+          {/* Chart skeleton when data exists but is reloading */}
+          {chartData.length > 0 && (
+            <div className="mb-8 bg-gray-900 rounded-lg border border-gray-800 p-6">
+              <div className="animate-pulse">
+                <div className="h-6 bg-gray-700 rounded w-1/4 mb-4"></div>
+                <div className="h-80 bg-gray-800 rounded"></div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Chart and Table */}
-      {!isLoading && !error && (
+      {!error && (chartData.length > 0 || tableData.length > 0) && (
         <>
-          <div className="mb-8">
-            <InsolationChart 
-              data={data}
-              title="Wykres nasłonecznienia"
-            />
-          </div>
+          {/* Chart Section */}
+          {chartData.length > 0 && (
+            <div className="mb-8">
+              <InsolationChart 
+                key={chartKey}
+                data={chartData}
+                viewType={chartViewType}
+                onViewTypeChange={setChartViewType}
+                title="Wykres nasłonecznienia"
+                isLoading={chartLoading}
+              />
+            </div>
+          )}
 
-          <InsolationDataTable
-            data={data}
-            pagination={pagination}
-            onPageChange={handlePageChange}
-            onSortChange={handleSortChange}
-            sorting={{ sortBy, sortOrder }}
-            filters={filters}
-          />
+          {/* Table Section */}
+          {!isLoading && tableData.length > 0 && (
+            <InsolationDataTable
+              data={tableData}
+              pagination={pagination}
+              onPageChange={handlePageChange}
+              onSortChange={handleSortChange}
+              sorting={{ sortBy, sortOrder }}
+              filters={filters}
+            />
+          )}
         </>
       )}
 
       {/* No data message */}
-      {!isLoading && !error && data.length === 0 && (
+      {!isLoading && !error && chartData.length === 0 && tableData.length === 0 && (
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-12 text-center">
           <Sun className="h-16 w-16 text-gray-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-100 mb-2">Brak danych</h3>

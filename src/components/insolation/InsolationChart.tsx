@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, memo } from 'react'
 import { 
   LineChart, 
   Line, 
@@ -22,19 +22,93 @@ interface InsolationChartProps {
   title?: string
   className?: string
   showComparison?: boolean
+  viewType?: 'hourly' | 'daily' | 'monthly'
+  onViewTypeChange?: (viewType: 'hourly' | 'daily' | 'monthly') => void
+  isLoading?: boolean
 }
 
 type ChartType = 'line' | 'bar'
-type ViewType = 'hourly' | 'daily' | 'monthly'
 
-export function InsolationChart({ 
+const InsolationChartComponent = function InsolationChart({ 
   data, 
   title = 'Dane nasłonecznienia',
-  className = ''
+  className = '',
+  viewType = 'daily',
+  onViewTypeChange,
+  isLoading = false
 }: InsolationChartProps) {
   const [chartType, setChartType] = useState<ChartType>('line')
-  const [viewType, setViewType] = useState<ViewType>('hourly')
 
+  // Process backend data for display
+  const processedData = useMemo(() => {
+    if (!data || data.length === 0) return []
+    
+    return data.map(item => {
+      let time: string
+      let displayData: Record<string, unknown> = { ...item }
+      
+      if (viewType === 'hourly') {
+        // For hourly data, format time display
+        time = `${item.date} ${item.hour?.toString().padStart(2, '0')}:00`
+        displayData = {
+          ...item,
+          time,
+          insolation: Number(item.insolation_percentage.toFixed(2))
+        }
+      } else if (viewType === 'daily') {
+        // For daily data, use date as time
+        time = item.date
+        displayData = {
+          ...item,
+          time,
+          insolation: Number(item.insolation_percentage.toFixed(2))
+        }
+      } else if (viewType === 'monthly') {
+        // For monthly data, format month display
+        const monthKey = (item as unknown as Record<string, unknown>).month as string || item.date?.substring(0, 7)
+        if (monthKey) {
+          const [year, monthNum] = monthKey.split('-')
+          const monthNames = [
+            'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
+            'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
+          ]
+          time = `${monthNames[parseInt(monthNum) - 1]} ${year}`
+        } else {
+          time = item.date || ''
+        }
+        displayData = {
+          ...item,
+          time,
+          insolation: Number(item.insolation_percentage.toFixed(2))
+        }
+      } else {
+        time = item.date
+        displayData = {
+          ...item,
+          time,
+          insolation: Number(item.insolation_percentage.toFixed(2))
+        }
+      }
+      
+      return displayData
+    })
+  }, [data, viewType])
+
+  // Memoized statistics calculation
+  const statistics = useMemo(() => {
+    if (processedData.length === 0) {
+      return { average: 0, max: 0, min: 0 }
+    }
+    
+    const insolationValues = processedData.map(item => (item as Record<string, unknown>).insolation as number)
+    return {
+      average: insolationValues.reduce((sum, val) => sum + val, 0) / insolationValues.length,
+      max: Math.max(...insolationValues),
+      min: Math.min(...insolationValues)
+    }
+  }, [processedData])
+
+  // Early return after all hooks
   if (!data || data.length === 0) {
     return (
       <div className={`bg-gray-900 rounded-lg border border-gray-800 ${className}`}>
@@ -46,82 +120,11 @@ export function InsolationChart({
     )
   }
 
-  // Process data based on view type
-  const processedData = (() => {
-    switch (viewType) {
-      case 'hourly':
-        // Group by date and hour
-        return data.map(item => ({
-          time: `${item.date} ${item.hour.toString().padStart(2, '0')}:00`,
-          date: item.date,
-          hour: item.hour,
-          insolation: item.insolation_percentage,
-          city: item.city,
-          province: item.province
-        })).sort((a, b) => {
-          const dateCompare = a.date.localeCompare(b.date)
-          return dateCompare !== 0 ? dateCompare : a.hour - b.hour
-        })
-      
-      case 'daily':
-        // Group by date and calculate average
-        const dailyMap = new Map<string, { sum: number; count: number; cities: Set<string> }>()
-        
-        data.forEach(item => {
-          const existing = dailyMap.get(item.date) || { sum: 0, count: 0, cities: new Set() }
-          existing.sum += item.insolation_percentage
-          existing.count += 1
-          existing.cities.add(item.city)
-          dailyMap.set(item.date, existing)
-        })
-        
-        return Array.from(dailyMap.entries()).map(([date, { sum, count, cities }]) => ({
-          time: date,
-          date,
-          insolation: parseFloat((sum / count).toFixed(2)),
-          cities: cities.size,
-          count
-        })).sort((a, b) => a.date.localeCompare(b.date))
-      
-      case 'monthly':
-        // Group by year-month and calculate average
-        const monthlyMap = new Map<string, { sum: number; count: number; cities: Set<string> }>()
-        
-        data.forEach(item => {
-          const monthKey = item.date.substring(0, 7) // YYYY-MM
-          const existing = monthlyMap.get(monthKey) || { sum: 0, count: 0, cities: new Set() }
-          existing.sum += item.insolation_percentage
-          existing.count += 1
-          existing.cities.add(item.city)
-          monthlyMap.set(monthKey, existing)
-        })
-        
-        return Array.from(monthlyMap.entries()).map(([month, { sum, count, cities }]) => ({
-          time: month,
-          month,
-          insolation: parseFloat((sum / count).toFixed(2)),
-          cities: cities.size,
-          count
-        })).sort((a, b) => a.month.localeCompare(b.month))
-      
-      default:
-        return []
-    }
-  })()
-
-  // Calculate statistics
-  const averageInsolation = processedData.length > 0 
-    ? processedData.reduce((sum, item) => sum + item.insolation, 0) / processedData.length
-    : 0
-
-  const maxInsolation = Math.max(...processedData.map(item => item.insolation))
-  const minInsolation = Math.min(...processedData.map(item => item.insolation))
-
-  // Custom tooltip
+  // Custom tooltip component
   const CustomTooltip = ({ active, payload, label }: { 
     active?: boolean; 
     payload?: Array<{ payload: Record<string, string | number>; value: number }>; 
-    label?: string 
+    label?: string | number 
   }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
@@ -131,11 +134,8 @@ export function InsolationChart({
           <p className="text-blue-400">
             Nasłonecznienie: {payload[0].value.toFixed(1)}%
           </p>
-          {data.city && (
-            <p className="text-gray-400 text-sm">Miasto: {data.city}</p>
-          )}
-          {data.cities && (
-            <p className="text-gray-400 text-sm">Miast: {data.cities}</p>
+          {data.dates && (
+            <p className="text-gray-400 text-sm">Dni: {data.dates}</p>
           )}
           {data.count && (
             <p className="text-gray-400 text-sm">Pomiarów: {data.count}</p>
@@ -154,38 +154,43 @@ export function InsolationChart({
           
           <div className="flex items-center space-x-2">
             {/* View type selector */}
-            <div className="flex bg-gray-800 rounded-lg p-1">
-              <button
-                onClick={() => setViewType('hourly')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  viewType === 'hourly' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                Godzinowy
-              </button>
-              <button
-                onClick={() => setViewType('daily')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  viewType === 'daily' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                Dzienny
-              </button>
-              <button
-                onClick={() => setViewType('monthly')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  viewType === 'monthly' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                Miesięczny
-              </button>
-            </div>
+            {onViewTypeChange && (
+              <div className="flex bg-gray-800 rounded-lg p-1">
+                <button
+                  onClick={() => onViewTypeChange('hourly')}
+                  disabled={isLoading}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors disabled:opacity-50 ${
+                    viewType === 'hourly' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  Godzinowy
+                </button>
+                <button
+                  onClick={() => onViewTypeChange('daily')}
+                  disabled={isLoading}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors disabled:opacity-50 ${
+                    viewType === 'daily' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  Dzienny
+                </button>
+                <button
+                  onClick={() => onViewTypeChange('monthly')}
+                  disabled={isLoading}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors disabled:opacity-50 ${
+                    viewType === 'monthly' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  Miesięczny
+                </button>
+              </div>
+            )}
 
             {/* Chart type selector */}
             <div className="flex space-x-1">
@@ -211,15 +216,15 @@ export function InsolationChart({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="text-center p-3 bg-gray-800 rounded-lg">
             <p className="text-sm text-gray-400">Średnie</p>
-            <p className="text-lg font-bold text-blue-400">{averageInsolation.toFixed(1)}%</p>
+            <p className="text-lg font-bold text-blue-400">{statistics.average.toFixed(1)}%</p>
           </div>
           <div className="text-center p-3 bg-gray-800 rounded-lg">
             <p className="text-sm text-gray-400">Maksimum</p>
-            <p className="text-lg font-bold text-emerald-400">{maxInsolation.toFixed(1)}%</p>
+            <p className="text-lg font-bold text-emerald-400">{statistics.max.toFixed(1)}%</p>
           </div>
           <div className="text-center p-3 bg-gray-800 rounded-lg">
             <p className="text-sm text-gray-400">Minimum</p>
-            <p className="text-lg font-bold text-red-400">{minInsolation.toFixed(1)}%</p>
+            <p className="text-lg font-bold text-red-400">{statistics.min.toFixed(1)}%</p>
           </div>
         </div>
       </div>
@@ -250,9 +255,9 @@ export function InsolationChart({
                   domain={[0, 100]}
                   tickFormatter={(value) => `${value}%`}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={CustomTooltip} />
                 <ReferenceLine 
-                  y={averageInsolation} 
+                  y={statistics.average} 
                   stroke="#3B82F6" 
                   strokeDasharray="5 5"
                   strokeOpacity={0.7}
@@ -288,9 +293,9 @@ export function InsolationChart({
                   domain={[0, 100]}
                   tickFormatter={(value) => `${value}%`}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={CustomTooltip} />
                 <ReferenceLine 
-                  y={averageInsolation} 
+                  y={statistics.average} 
                   stroke="#3B82F6" 
                   strokeDasharray="5 5"
                   strokeOpacity={0.7}
@@ -311,14 +316,23 @@ export function InsolationChart({
             <div className="flex items-center">
               <Calendar className="h-4 w-4 mr-1" />
               <span>Punktów danych: {processedData.length}</span>
+              {isLoading && (
+                <span className="ml-2 animate-pulse">Ładowanie...</span>
+              )}
             </div>
             {viewType === 'hourly' && data.length > 0 && (
               <span>
-                Zakres: {data[0]?.date} - {data[data.length - 1]?.date}
+                Zakres: {data[0]?.date} {data.length > 1 ? `- ${data[data.length - 1]?.date}` : ''}
               </span>
             )}
+            {viewType === 'daily' && (
+              <span>Ostatnie {processedData.length} dni</span>
+            )}
+            {viewType === 'monthly' && (
+              <span>Ostatnie 12 miesięcy</span>
+            )}
             <span className="text-blue-400">
-              Średnia linia: {averageInsolation.toFixed(1)}%
+              Średnia linia: {statistics.average.toFixed(1)}%
             </span>
           </div>
         </div>
@@ -326,3 +340,7 @@ export function InsolationChart({
     </div>
   )
 }
+
+InsolationChartComponent.displayName = 'InsolationChart'
+
+export const InsolationChart = memo(InsolationChartComponent)

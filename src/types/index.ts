@@ -316,3 +316,6 @@ export interface InsolationDataInput {
   hour: number
   insolation_percentage: number
 }
+
+// Application timezone configuration
+export const APP_TIMEZONE = 'Europe/Warsaw'

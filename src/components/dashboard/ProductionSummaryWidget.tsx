@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Zap, Sun, TrendingUp, Activity } from 'lucide-react'
+import { Zap, Sun, TrendingUp, Activity, Home } from 'lucide-react'
 import { useLocations } from '@/hooks/useLocations'
 import { formatProduction } from '@/lib/utils/pv-production'
 
@@ -13,7 +13,11 @@ interface LocationProduction {
   locationId: string
   currentProduction: number
   dailyProduction: number
+  currentConsumption: number
+  dailyConsumption: number
   insolationPercentage: number
+  selfConsumptionRate: number
+  energyBalance: number
 }
 
 interface ProductionSummaryResponse {
@@ -76,12 +80,16 @@ export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWid
 
   const totalCurrentProduction = locationProductions.reduce((sum, loc) => sum + loc.currentProduction, 0)
   const totalDailyProduction = locationProductions.reduce((sum, loc) => sum + loc.dailyProduction, 0)
-  const totalInstalledPower = locations.reduce((sum, loc) => sum + loc.pv_power_kwp, 0)
+  const totalCurrentConsumption = locationProductions.reduce((sum, loc) => sum + loc.currentConsumption, 0)
+  const totalEnergyBalance = locationProductions.reduce((sum, loc) => sum + loc.energyBalance, 0)
   const averageInsolation = locationProductions.length > 0 
     ? locationProductions.reduce((sum, loc) => sum + loc.insolationPercentage, 0) / locationProductions.length
     : 0
 
-  const efficiencyPercentage = totalInstalledPower > 0 ? (totalCurrentProduction / totalInstalledPower) * 100 : 0
+  // Calculate overall self-consumption rate (how much produced energy is being used locally)
+  const selfConsumptionPercentage = totalCurrentProduction > 0 
+    ? Math.min((totalCurrentConsumption / totalCurrentProduction) * 100, 100)
+    : 0
 
   if (locationsLoading || isLoading) {
     return (
@@ -119,12 +127,6 @@ export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWid
       <div className="p-6 border-b border-gray-800">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-100">Produkcja energii</h2>
-          {totalCurrentProduction > 0 && (
-            <div className="flex items-center text-sm text-emerald-400">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
-              <span>Na żywo</span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -136,7 +138,7 @@ export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWid
 
       <div className="p-6">
         {/* Main metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
               <div className="p-2 bg-emerald-950/50 rounded-lg ring-1 ring-emerald-500/20">
@@ -163,6 +165,18 @@ export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWid
 
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
+              <div className="p-2 bg-orange-950/50 rounded-lg ring-1 ring-orange-500/20">
+                <Home className="h-5 w-5 text-orange-500" />
+              </div>
+            </div>
+            <p className="text-sm text-gray-400 mb-1">Aktualne zużycie</p>
+            <p className="text-xl font-bold text-orange-400">
+              {formatProduction(totalCurrentConsumption)}
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-2">
               <div className="p-2 bg-amber-950/50 rounded-lg ring-1 ring-amber-500/20">
                 <Sun className="h-5 w-5 text-amber-500" />
               </div>
@@ -179,30 +193,34 @@ export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWid
                 <Activity className="h-5 w-5 text-purple-500" />
               </div>
             </div>
-            <p className="text-sm text-gray-400 mb-1">Wydajność</p>
+            <p className="text-sm text-gray-400 mb-1">Autokonsumpcja</p>
             <p className="text-xl font-bold text-purple-400">
-              {efficiencyPercentage.toFixed(0)}%
+              {selfConsumptionPercentage.toFixed(0)}%
             </p>
           </div>
         </div>
 
-        {/* Efficiency indicator */}
+        {/* Self-consumption efficiency indicator */}
         <div className="mb-4">
           <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <span>Wykorzystanie mocy instalacji</span>
-            <span>{totalCurrentProduction.toFixed(1)} / {totalInstalledPower} kW</span>
+            <span>Poziom autokonsumpcji energii</span>
+            <span>{totalCurrentConsumption.toFixed(1)} / {totalCurrentProduction.toFixed(1)} kW</span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-3">
             <div
               className={`h-3 rounded-full transition-all duration-300 ${
-                efficiencyPercentage >= 80 ? 'bg-emerald-500' :
-                efficiencyPercentage >= 60 ? 'bg-blue-500' :
-                efficiencyPercentage >= 40 ? 'bg-amber-500' :
-                efficiencyPercentage > 0 ? 'bg-red-500' :
+                selfConsumptionPercentage >= 80 ? 'bg-emerald-500' :
+                selfConsumptionPercentage >= 60 ? 'bg-blue-500' :
+                selfConsumptionPercentage >= 40 ? 'bg-amber-500' :
+                selfConsumptionPercentage > 0 ? 'bg-red-500' :
                 'bg-gray-500'
               }`}
-              style={{ width: `${Math.min(efficiencyPercentage, 100)}%` }}
+              style={{ width: `${Math.min(selfConsumptionPercentage, 100)}%` }}
             ></div>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>{totalEnergyBalance >= 0 ? 'Nadwyżka' : 'Niedobór'}: {Math.abs(totalEnergyBalance).toFixed(1)} kW</span>
+            <span>{totalEnergyBalance >= 0 ? 'Export do sieci' : 'Import z sieci'}</span>
           </div>
         </div>
 
@@ -233,10 +251,10 @@ export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWid
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-200">
-                        {formatProduction(locationProd.currentProduction)}
+                        {formatProduction(locationProd.currentProduction)} / {formatProduction(locationProd.currentConsumption)}
                       </p>
                       <p className="text-xs text-gray-400">
-                        {formatProduction(locationProd.dailyProduction, 'kWh')} dziś
+                        Autokonsumpcja: {locationProd.selfConsumptionRate.toFixed(0)}%
                       </p>
                     </div>
                   </div>

@@ -10,12 +10,10 @@ import {
   MapPin, 
   Settings, 
   LogOut,
-  User as UserIcon,
   BarChart3,
   Sun,
   FileSpreadsheet
 } from 'lucide-react'
-import type { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
 
 const navigation = [
@@ -31,7 +29,6 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
@@ -51,8 +48,6 @@ export default function DashboardLayout({
         router.push('/login')
         return
       }
-
-      setUser(user)
       setLoading(false)
     }
 
@@ -62,10 +57,8 @@ export default function DashboardLayout({
       (event, session) => {
         
         if (event === 'SIGNED_OUT' || !session) {
-          setUser(null)
           router.push('/login')
         } else if (session) {
-          setUser(session.user)
           setLoading(false)
         }
       }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServiceClient } from '@/lib/supabase/service'
 import { calculatePVProduction, calculateDailyProduction } from '@/lib/utils/pv-production'
 import { getProvinceForCity } from '@/types'
-import type { UserLocation, InsolationData } from '@/types'
+import type { UserLocation, InsolationData, ConsumptionProfile } from '@/types'
 
 
 export async function GET(request: NextRequest) {
@@ -71,7 +71,11 @@ export async function GET(request: NextRequest) {
             locationId: location.id,
             currentProduction: 0,
             dailyProduction: 0,
-            insolationPercentage: 0
+            currentConsumption: 0,
+            dailyConsumption: 0,
+            insolationPercentage: 0,
+            selfConsumptionRate: 0,
+            energyBalance: 0
           }
         }
 
@@ -84,11 +88,48 @@ export async function GET(request: NextRequest) {
         const hourlyInsolationValues = (insolationData || []).map((data: InsolationData) => data.insolation_percentage)
         const dailyProduction = calculateDailyProduction(location.pv_power_kwp, hourlyInsolationValues, systemLossesDecimal)
 
+        // Fetch consumption profiles for this location
+        const { data: consumptionProfiles, error: consumptionError } = await supabase
+          .from('consumption_profiles')
+          .select('*')
+          .eq('location_id', location.id)
+
+        let currentConsumption = 0
+        let dailyConsumption = 0
+
+        if (!consumptionError && consumptionProfiles) {
+          // Get current day of week (0 = Sunday, 1 = Monday, etc.)
+          const currentDayOfWeek = now.getDay()
+          
+          // Find consumption for current hour
+          const currentHourProfile = consumptionProfiles.find(
+            (profile: ConsumptionProfile) => 
+              profile.day_of_week === currentDayOfWeek && profile.hour === currentHour
+          )
+          currentConsumption = currentHourProfile?.consumption_kwh || 0
+
+          // Calculate daily consumption (sum all hours for today)
+          const todayProfiles = consumptionProfiles.filter(
+            (profile: ConsumptionProfile) => profile.day_of_week === currentDayOfWeek
+          )
+          dailyConsumption = todayProfiles.reduce((sum, profile) => sum + profile.consumption_kwh, 0)
+        }
+
+        // Calculate efficiency metrics
+        const energyBalance = currentProduction - currentConsumption
+        const selfConsumptionRate = currentProduction > 0 
+          ? Math.min((currentConsumption / currentProduction) * 100, 100)
+          : 0
+
         return {
           locationId: location.id,
           currentProduction,
           dailyProduction,
-          insolationPercentage: currentInsolation
+          currentConsumption,
+          dailyConsumption,
+          insolationPercentage: currentInsolation,
+          selfConsumptionRate,
+          energyBalance
         }
       } catch (error) {
         console.error(`Error processing location ${location.name}:`, error)
@@ -96,7 +137,11 @@ export async function GET(request: NextRequest) {
           locationId: location.id,
           currentProduction: 0,
           dailyProduction: 0,
-          insolationPercentage: 0
+          currentConsumption: 0,
+          dailyConsumption: 0,
+          insolationPercentage: 0,
+          selfConsumptionRate: 0,
+          energyBalance: 0
         }
       }
     })

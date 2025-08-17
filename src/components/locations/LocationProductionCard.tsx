@@ -167,18 +167,6 @@ export function LocationProductionCard({ location, className = '' }: LocationPro
             </div>
           </div>
         </div>
-
-        {/* Live indicator */}
-        {currentProduction > 0 && (
-          <div className="flex items-center justify-center mt-4 pt-4 border-t border-gray-600">
-            <div className="flex items-center text-xs font-medium">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
-              <span className="text-emerald-400 bg-emerald-900 px-2 py-1 rounded-full border border-emerald-700">
-                Dane na żywo
-              </span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

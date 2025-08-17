@@ -5,8 +5,6 @@ import type { InsolationData } from '@/types'
 interface InsolationFilters {
   province?: string
   city?: string
-  startDate?: string
-  endDate?: string
   hour?: string
   page?: number
   limit?: number
@@ -31,6 +29,13 @@ interface InsolationResponse {
   }
 }
 
+interface InsolationChartResponse {
+  data: InsolationData[]
+  viewType: string
+  dateRange: { startDate: string; endDate: string }
+  filters: InsolationFilters
+}
+
 interface InsolationStatistics {
   totalRecords: number
   uniqueCities: number
@@ -45,6 +50,14 @@ const fetcher = async (url: string): Promise<InsolationResponse> => {
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error('Failed to fetch insolation data')
+  }
+  return response.json()
+}
+
+const chartFetcher = async (url: string): Promise<InsolationChartResponse> => {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error('Failed to fetch chart data')
   }
   return response.json()
 }
@@ -65,11 +78,15 @@ export function useInsolation(filters: InsolationFilters = {}) {
     fetcher,
     {
       revalidateOnFocus: false,
-      revalidateOnReconnect: true,
+      revalidateOnReconnect: false, // Prevent unnecessary revalidation
       revalidateOnMount: true,
-      dedupingInterval: 60000, // 60 seconds
-      errorRetryCount: 3,
-      errorRetryInterval: 5000,
+      revalidateIfStale: false, // Don't revalidate stale data automatically
+      dedupingInterval: 300000, // 5 minutes to reduce duplicate requests
+      errorRetryCount: 2, // Reduce retry attempts
+      errorRetryInterval: 3000, // Faster retry interval
+      keepPreviousData: true, // Keep previous data while loading new data
+      refreshInterval: 0, // Disable automatic refresh
+      focusThrottleInterval: 60000, // Throttle focus events
     }
   )
 
@@ -174,6 +191,48 @@ export function useInsolationStatistics() {
   }
 }
 
+export function useInsolationChart(viewType: 'hourly' | 'daily' | 'monthly', filters: InsolationFilters = {}) {
+  const searchParams = new URLSearchParams()
+  
+  // Add viewType parameter for chart-specific API call
+  searchParams.append('viewType', viewType)
+  
+  // Add other filters
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '' && key !== 'page' && key !== 'limit') {
+      searchParams.append(key, String(value))
+    }
+  })
+
+  const url = `/api/insolation?${searchParams.toString()}`
+  
+  const { data, error, isLoading, mutate } = useSWR<InsolationChartResponse>(
+    url,
+    chartFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateOnMount: true,
+      revalidateIfStale: false,
+      dedupingInterval: 120000, // 2 minutes for chart data
+      errorRetryCount: 2,
+      errorRetryInterval: 3000,
+      keepPreviousData: true,
+      refreshInterval: 0,
+    }
+  )
+
+  return {
+    data: data?.data || [],
+    viewType: data?.viewType,
+    dateRange: data?.dateRange,
+    filters: data?.filters,
+    error,
+    isLoading,
+    mutate
+  }
+}
+
 export function useInsolationExport() {
   const [isExporting, setIsExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -260,8 +319,13 @@ export function useInsolationLive(city: string, refreshInterval = 300000) { // 5
     fetcher,
     {
       refreshInterval,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
+      revalidateOnFocus: false, // Reduce unnecessary revalidations
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60000, // 1 minute deduping for live data
+      keepPreviousData: true,
+      errorRetryCount: 2,
+      errorRetryInterval: 2000,
     }
   )
 
