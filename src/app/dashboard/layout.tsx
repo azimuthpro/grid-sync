@@ -6,23 +6,23 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSupabase } from '@/hooks/useSupabase'
 import { 
-  Home, 
+  Gauge, 
   MapPin, 
-  FileText, 
   Settings, 
   LogOut,
   User as UserIcon,
   BarChart3,
-  Sun
+  Sun,
+  FileSpreadsheet
 } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
 
 const navigation = [
-  { name: 'Panel główny', href: '/dashboard', icon: Home },
+  { name: 'Start', href: '/dashboard', icon: Gauge },
   { name: 'Lokalizacje', href: '/dashboard/locations', icon: MapPin },
-  { name: 'Dane nasłonecznienia', href: '/dashboard/insolation', icon: Sun },
-  { name: 'Raporty', href: '/dashboard/reports', icon: FileText },
+  { name: 'Nasłonecznienie', href: '/dashboard/insolation', icon: Sun },
+  { name: 'Raporty', href: '/dashboard/reports', icon: FileSpreadsheet },
   { name: 'Ustawienia', href: '/dashboard/settings', icon: Settings },
 ]
 
@@ -117,7 +117,7 @@ export default function DashboardLayout({
                   className={cn(
                     'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors',
                     isActive
-                      ? 'bg-blue-950/50 text-blue-400 border border-blue-500/20'
+                      ? 'bg-blue-900 text-blue-300 border border-blue-700'
                       : 'text-gray-300 hover:bg-gray-800 hover:text-gray-100'
                   )}
                 >
@@ -129,23 +129,10 @@ export default function DashboardLayout({
           </nav>
 
           {/* User section */}
-          <div className="border-t border-gray-800 p-4">
-            <div className="flex items-center mb-4">
-              <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-gray-800 rounded-full flex items-center justify-center ring-1 ring-gray-700">
-                  <UserIcon className="h-4 w-4 text-blue-500" />
-                </div>
-              </div>
-              <div className="ml-3 flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-100 truncate">
-                  {user?.email}
-                </p>
-                <p className="text-xs text-gray-400">Prosument</p>
-              </div>
-            </div>
+          <div className="p-4">
             <button
               onClick={handleSignOut}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-gray-100 rounded-lg transition-colors"
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-gray-100 rounded-lg transition-colors cursor-pointer"
             >
               <LogOut className="h-4 w-4 mr-3" />
               Wyloguj się

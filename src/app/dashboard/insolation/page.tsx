@@ -71,10 +71,7 @@ export default function InsolationPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-100">Dane nasłonecznienia</h1>
-            <p className="text-gray-400 mt-2">
-              Przeglądaj dane nasłonecznienia według województw i miast
-            </p>
+            <h1 className="text-2xl font-bold text-gray-100">Dane nasłonecznienia</h1>
           </div>
           
           <div className="flex items-center space-x-3">

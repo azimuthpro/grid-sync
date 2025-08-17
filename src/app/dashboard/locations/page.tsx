@@ -24,12 +24,7 @@ export default function LocationsPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-100">Lokalizacje</h1>
-        <p className="text-gray-400 mt-2">
-          Zarządzaj swoimi instalacjami fotowoltaicznymi
-        </p>
-      </div>
+
 
       {error && (
         <div className="bg-red-950/50 border border-red-500/20 rounded-md p-4 mb-6">
