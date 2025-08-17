@@ -5,12 +5,24 @@ import { MapPin, Zap, FileText, Plus, Sun } from 'lucide-react'
 import Link from 'next/link'
 import { formatPower } from '@/lib/utils'
 import { ProductionSummaryWidget } from '@/components/dashboard/ProductionSummaryWidget'
+import { SYSTEM_LOSSES } from '@/types'
 
 export default function DashboardPage() {
   const { data: locations = [], isLoading } = useLocations()
 
-  const primaryLocation = locations.find(loc => loc.is_primary)
+  // Calculate summary statistics
   const totalPower = locations.reduce((sum, loc) => sum + loc.pv_power_kwp, 0)
+  const averagePower = locations.length > 0 ? totalPower / locations.length : 0
+  const uniqueCities = [...new Set(locations.map(loc => loc.city))]
+
+  // Calculate average system efficiency
+  const customEfficiencies = locations
+    .filter(loc => loc.system_losses !== undefined)
+    .map(loc => loc.system_losses!)
+  const hasCustomEfficiencies = customEfficiencies.length > 0
+  const avgEfficiency = hasCustomEfficiencies 
+    ? customEfficiencies.reduce((a, b) => a + b, 0) / customEfficiencies.length
+    : Math.round(SYSTEM_LOSSES * 100)
 
   if (isLoading) {
     return (
@@ -65,11 +77,11 @@ export default function DashboardPage() {
         <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
           <div className="flex items-center">
             <div className="p-2 bg-amber-950/50 rounded-lg ring-1 ring-amber-500/20">
-              <FileText className="h-6 w-6 text-amber-500" />
+              <Sun className="h-6 w-6 text-amber-500" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Status</p>
-              <p className="text-2xl font-bold text-gray-100">Aktywne</p>
+              <p className="text-sm font-medium text-gray-400">Średnia moc</p>
+              <p className="text-2xl font-bold text-gray-100">{formatPower(averagePower)}</p>
             </div>
           </div>
         </div>
@@ -118,17 +130,12 @@ export default function DashboardPage() {
                     className="flex items-center justify-between p-4 border border-gray-700 rounded-lg bg-gray-800/50"
                   >
                     <div className="flex items-center">
-                      <div className={`p-2 rounded-lg ${location.is_primary ? 'bg-blue-950/50 ring-1 ring-blue-500/20' : 'bg-gray-700'}`}>
-                        <MapPin className={`h-4 w-4 ${location.is_primary ? 'text-blue-500' : 'text-gray-400'}`} />
+                      <div className="p-2 rounded-lg bg-gray-700">
+                        <MapPin className="h-4 w-4 text-gray-400" />
                       </div>
                       <div className="ml-3">
                         <p className="font-medium text-gray-100">
                           {location.name}
-                          {location.is_primary && (
-                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-950/50 text-blue-400 ring-1 ring-blue-500/20">
-                              Główna
-                            </span>
-                          )}
                         </p>
                         <p className="text-sm text-gray-400">
                           {location.city} • {formatPower(location.pv_power_kwp)}
@@ -192,14 +199,25 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            {primaryLocation && (
+            {locations.length > 0 && (
               <div className="p-4 bg-blue-950/50 border border-blue-500/20 rounded-lg">
-                <p className="text-sm font-medium text-blue-400 mb-2">
-                  Lokalizacja główna: {primaryLocation.name}
+                <p className="text-sm font-medium text-blue-400 mb-3">
+                  Podsumowanie wszystkich lokalizacji
                 </p>
-                <p className="text-sm text-blue-300">
-                  {primaryLocation.city} • {formatPower(primaryLocation.pv_power_kwp)}
-                </p>
+                <div className="space-y-2 text-sm text-blue-300">
+                  <div className="flex justify-between">
+                    <span>Średnia moc na lokalizację:</span>
+                    <span className="font-medium">{formatPower(averagePower)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Miasta ({uniqueCities.length}):</span>
+                    <span className="font-medium">{uniqueCities.slice(0, 2).join(', ')}{uniqueCities.length > 2 ? ` +${uniqueCities.length - 2}` : ''}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Średnia sprawność systemu:</span>
+                    <span className="font-medium">{Math.round(avgEfficiency)}%</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>

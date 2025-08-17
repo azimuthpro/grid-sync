@@ -77,11 +77,12 @@ export async function GET(request: NextRequest) {
 
         const currentHourData = insolationData?.find((data: InsolationData) => data.hour === currentHour)
         const currentInsolation = currentHourData?.insolation_percentage || 0
-        const currentProduction = calculatePVProduction(location.pv_power_kwp, currentInsolation)
+        const systemLossesDecimal = location.system_losses ? location.system_losses / 100 : undefined
+        const currentProduction = calculatePVProduction(location.pv_power_kwp, currentInsolation, systemLossesDecimal)
         
         // Calculate daily production from available hourly data
         const hourlyInsolationValues = (insolationData || []).map((data: InsolationData) => data.insolation_percentage)
-        const dailyProduction = calculateDailyProduction(location.pv_power_kwp, hourlyInsolationValues)
+        const dailyProduction = calculateDailyProduction(location.pv_power_kwp, hourlyInsolationValues, systemLossesDecimal)
 
         return {
           locationId: location.id,

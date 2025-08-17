@@ -104,7 +104,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    return NextResponse.json(data)
+    // Convert system_losses from decimal to percentage for frontend
+    const locationWithPercentage = {
+      ...data,
+      system_losses: data.system_losses ? data.system_losses * 100 : undefined
+    }
+
+    return NextResponse.json(locationWithPercentage)
   } catch (error) {
     console.error('API Error:', error)
     return NextResponse.json(
@@ -139,22 +145,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // If this is being set as primary, unset other primary locations
-    if (body.is_primary) {
-      await supabase
-        .from('user_locations')
-        .update({ is_primary: false })
-        .eq('user_id', user.id)
-        .eq('is_primary', true)
-        .neq('id', locationId)
+
+    const updateData = {
+      ...body,
+      system_losses: body.system_losses ? body.system_losses / 100 : undefined,
+      updated_at: new Date().toISOString()
     }
 
     const { data, error } = await supabase
       .from('user_locations')
-      .update({
-        ...body,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', locationId)
       .select()
       .single()
@@ -167,7 +167,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    return NextResponse.json(data)
+    // Convert system_losses from decimal to percentage for frontend
+    const locationWithPercentage = {
+      ...data,
+      system_losses: data.system_losses ? data.system_losses * 100 : undefined
+    }
+
+    return NextResponse.json(locationWithPercentage)
   } catch (error) {
     console.error('API Error:', error)
     return NextResponse.json(

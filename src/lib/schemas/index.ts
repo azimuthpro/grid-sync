@@ -14,7 +14,11 @@ export const locationSchema = z.object({
   pv_power_kwp: z.number().or(z.string().pipe(z.coerce.number())).pipe(
     z.number().positive('Moc instalacji musi być większa od 0').max(100, 'Moc instalacji nie może być większa niż 100 kWp')
   ),
-  is_primary: z.boolean().default(false).catch(false), // Safer default with catch
+  system_losses: z.number().or(z.string().pipe(z.coerce.number())).pipe(
+    z.number()
+      .min(1, 'Sprawność systemu musi być co najmniej 1%')
+      .max(100, 'Sprawność systemu nie może być większa niż 100%')
+  ).optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional()
 })

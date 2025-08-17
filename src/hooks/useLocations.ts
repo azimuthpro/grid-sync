@@ -76,13 +76,7 @@ export function useLocations(): LocationsResponse & LocationMutations {
     // Optimistic update
     mutate((currentData) => {
       if (!currentData) return [newLocation]
-      
-      // If new location is primary, update others to not be primary
-      if (newLocation.is_primary) {
-        return [newLocation, ...currentData.map(loc => ({ ...loc, is_primary: false }))]
-      }
-      
-      return [...currentData, newLocation]
+      return [newLocation, ...currentData]
     }, false)
 
     return newLocation
@@ -117,10 +111,6 @@ export function useLocations(): LocationsResponse & LocationMutations {
       return currentData.map(loc => {
         if (loc.id === id) {
           return updatedLocation
-        }
-        // If updated location is now primary, unset others
-        if (updatedLocation.is_primary && loc.is_primary) {
-          return { ...loc, is_primary: false }
         }
         return loc
       })

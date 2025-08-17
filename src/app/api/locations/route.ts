@@ -62,7 +62,7 @@ export async function GET() {
       .from('user_locations')
       .select('*')
       .eq('user_id', user.id)
-      .order('is_primary', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching locations:', error)
@@ -72,7 +72,13 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json(data || [])
+    // Convert system_losses from decimal to percentage for frontend
+    const locationsWithPercentages = (data || []).map(location => ({
+      ...location,
+      system_losses: location.system_losses ? location.system_losses * 100 : undefined
+    }))
+
+    return NextResponse.json(locationsWithPercentages)
   } catch (error) {
     console.error('API Error:', error)
     return NextResponse.json(
@@ -99,17 +105,10 @@ export async function POST(request: NextRequest) {
     
     const locationData = {
       ...body,
+      system_losses: body.system_losses ? body.system_losses / 100 : undefined,
       user_id: user.id
     }
 
-    // If this is being set as primary, unset other primary locations
-    if (body.is_primary) {
-      await supabase
-        .from('user_locations')
-        .update({ is_primary: false })
-        .eq('user_id', user.id)
-        .eq('is_primary', true)
-    }
 
     const { data, error } = await supabase
       .from('user_locations')
@@ -125,7 +124,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json(data, { status: 201 })
+    // Convert system_losses from decimal to percentage for frontend
+    const locationWithPercentage = {
+      ...data,
+      system_losses: data.system_losses ? data.system_losses * 100 : undefined
+    }
+
+    return NextResponse.json(locationWithPercentage, { status: 201 })
   } catch (error) {
     console.error('API Error:', error)
     return NextResponse.json(

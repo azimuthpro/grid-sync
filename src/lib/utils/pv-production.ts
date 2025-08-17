@@ -1,9 +1,9 @@
-import { SOLAR_CONSTANTS } from '@/types'
+import { SYSTEM_LOSSES } from '@/types'
 
 /**
  * Calculate PV production based on installed power and insolation percentage
  */
-export function calculatePVProduction(pvPowerKwp: number, insolationPercentage: number): number {
+export function calculatePVProduction(pvPowerKwp: number, insolationPercentage: number, systemLosses?: number): number {
   if (pvPowerKwp <= 0 || insolationPercentage < 0 || insolationPercentage > 100) {
     return 0
   }
@@ -14,8 +14,9 @@ export function calculatePVProduction(pvPowerKwp: number, insolationPercentage: 
   // Calculate theoretical production
   const theoreticalProduction = pvPowerKwp * insolationFactor
 
-  // Apply system efficiency (85% accounting for losses)
-  const actualProduction = theoreticalProduction * SOLAR_CONSTANTS.SYSTEM_LOSSES * SOLAR_CONSTANTS.INVERTER_EFFICIENCY
+  // Apply system efficiency - use custom value or default SYSTEM_LOSSES
+  const efficiencyFactor = systemLosses ?? SYSTEM_LOSSES
+  const actualProduction = theoreticalProduction * efficiencyFactor
 
   return parseFloat(actualProduction.toFixed(3))
 }
@@ -23,13 +24,13 @@ export function calculatePVProduction(pvPowerKwp: number, insolationPercentage: 
 /**
  * Calculate daily PV production from hourly insolation data
  */
-export function calculateDailyProduction(pvPowerKwp: number, hourlyInsolationData: number[]): number {
+export function calculateDailyProduction(pvPowerKwp: number, hourlyInsolationData: number[], systemLosses?: number): number {
   if (pvPowerKwp <= 0 || hourlyInsolationData.length === 0) {
     return 0
   }
 
   const dailyTotal = hourlyInsolationData.reduce((total, insolationPercentage) => {
-    return total + calculatePVProduction(pvPowerKwp, insolationPercentage)
+    return total + calculatePVProduction(pvPowerKwp, insolationPercentage, systemLosses)
   }, 0)
 
   return parseFloat(dailyTotal.toFixed(3))

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MapPin, Edit, Trash2, Star, Plus, Zap } from 'lucide-react'
+import { MapPin, Edit, Trash2, Plus, Zap, Settings } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -11,6 +11,7 @@ import { useLocations } from '@/hooks/useLocations'
 import type { UserLocation } from '@/types'
 import type { CreateLocationSchema } from '@/lib/schemas'
 import { formatPower, getErrorMessage } from '@/lib/utils'
+import { SYSTEM_LOSSES } from '@/types'
 
 interface LocationListProps {
   locations: UserLocation[]
@@ -72,20 +73,6 @@ export function LocationList({ locations }: LocationListProps) {
     }
   }
 
-  const handleSetPrimary = async (location: UserLocation) => {
-    if (location.is_primary) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      await updateLocation(location.id, { is_primary: true })
-    } catch (error) {
-      setError(getErrorMessage(error))
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   if (locations.length === 0) {
     return (
@@ -158,51 +145,37 @@ export function LocationList({ locations }: LocationListProps) {
         {locations.map((location) => (
           <div
             key={location.id}
-            className={`p-6 bg-gray-900 border rounded-lg shadow-sm ${
-              location.is_primary ? 'border-blue-500/50 bg-blue-950/30' : 'border-gray-700'
-            }`}
+            className="p-6 bg-gray-900 border border-gray-700 rounded-lg shadow-sm"
           >
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Location info section */}
               <div className="lg:col-span-2">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start space-x-4">
-                    <div className={`p-2 rounded-lg ${
-                      location.is_primary ? 'bg-blue-950/50 ring-1 ring-blue-500/20' : 'bg-gray-800'
-                    }`}>
-                      <MapPin className={`h-5 w-5 ${
-                        location.is_primary ? 'text-blue-500' : 'text-gray-400'
-                      }`} />
+                    <div className="p-2 rounded-lg bg-gray-800">
+                      <MapPin className="h-5 w-5 text-gray-400" />
                     </div>
                     
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-gray-100">{location.name}</h3>
-                        {location.is_primary && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-950/50 text-blue-400 ring-1 ring-blue-500/20">
-                            <Star className="h-3 w-3 mr-1" />
-                            Główna
-                          </span>
-                        )}
                       </div>
                       <p className="text-gray-300">{location.city}</p>
-                      <p className="text-sm text-gray-400">{formatPower(location.pv_power_kwp)}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-gray-400">{formatPower(location.pv_power_kwp)}</p>
+                        {location.system_losses && location.system_losses !== Math.round(SYSTEM_LOSSES * 100) && (
+                          <div className="group relative">
+                            <Settings className="h-3 w-3 text-amber-500" />
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-gray-200 text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                              Niestandardowa sprawność: {location.system_losses}%
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    {!location.is_primary && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSetPrimary(location)}
-                        disabled={isLoading}
-                        title="Ustaw jako główną"
-                      >
-                        <Star className="h-4 w-4" />
-                      </Button>
-                    )}
-                    
                     <Button
                       variant="outline"
                       size="sm"
@@ -238,7 +211,7 @@ export function LocationList({ locations }: LocationListProps) {
                             name: location.name,
                             city: location.city,
                             pv_power_kwp: location.pv_power_kwp,
-                            is_primary: location.is_primary,
+                            system_losses: location.system_losses,
                             user_id: location.user_id
                           }}
                           isLoading={isLoading}

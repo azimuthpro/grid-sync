@@ -32,7 +32,8 @@ export function LocationProductionCard({ location, className = '' }: LocationPro
 
         if (currentHourData) {
           const insolation = currentHourData.insolation_percentage
-          const production = calculatePVProduction(location.pv_power_kwp, insolation)
+          const systemLossesDecimal = location.system_losses ? location.system_losses / 100 : undefined
+          const production = calculatePVProduction(location.pv_power_kwp, insolation, systemLossesDecimal)
           
           setInsolationPercentage(insolation)
           setCurrentProduction(production)
@@ -53,7 +54,7 @@ export function LocationProductionCard({ location, className = '' }: LocationPro
     // Refresh data every 5 minutes
     const interval = setInterval(fetchCurrentProduction, 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [location.city, location.pv_power_kwp])
+  }, [location.city, location.pv_power_kwp, location.system_losses])
 
   const maxPotentialProduction = location.pv_power_kwp // Maximum possible production
   const productionStatus = getProductionStatus(currentProduction, maxPotentialProduction)

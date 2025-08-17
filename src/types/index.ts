@@ -7,7 +7,7 @@ export interface UserLocation {
   name: string
   city: string
   pv_power_kwp: number
-  is_primary: boolean
+  system_losses?: number // Custom system efficiency factor (0-1), null means use default
   created_at: string
   updated_at: string
 }
@@ -100,7 +100,6 @@ export interface LocationFormData {
   name: string
   city: string
   pv_power_kwp: number
-  is_primary: boolean
 }
 
 export interface ReportFormData {
@@ -229,6 +228,7 @@ export const POLISH_CITIES_WITH_PROVINCES: Record<string, string> = {
   'Opole': 'Opolskie',
   'Poznań': 'Wielkopolskie',
   'Rzeszów': 'Podkarpackie',
+  'Suwałki': 'Podlaskie',
   'Szczecin': 'Zachodniopomorskie',
   'Toruń': 'Kujawsko-Pomorskie',
   'Warszawa': 'Mazowieckie',
@@ -278,12 +278,7 @@ export interface CSVExportOptions {
 }
 
 // Solar calculation constants
-export const SOLAR_CONSTANTS = {
-  STANDARD_TEST_CONDITIONS: 1000, // W/m²
-  PANEL_EFFICIENCY: 0.2, // 20% average efficiency
-  SYSTEM_LOSSES: 0.85, // 15% system losses
-  INVERTER_EFFICIENCY: 0.95 // 95% inverter efficiency
-} as const
+export const SYSTEM_LOSSES: number = 1 // 0% system losses
 
 // Cron job types
 export interface InsolationImageData {

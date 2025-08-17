@@ -221,9 +221,7 @@ export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWid
                     className="flex items-center justify-between p-3 bg-gray-800 rounded-lg"
                   >
                     <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full mr-3 ${
-                        location.is_primary ? 'bg-blue-500' : 'bg-gray-500'
-                      }`}></div>
+                      <div className="w-3 h-3 rounded-full mr-3 bg-blue-500"></div>
                       <div>
                         <p className="text-sm font-medium text-gray-200">
                           {location.name}
