@@ -148,6 +148,25 @@ src/
 
 ## Version History
 
+### v0.1.6 (August 18, 2025)
+
+**Enhanced Timezone Support and Dashboard Improvements**
+
+**Major Features:**
+- **Advanced timezone handling** - Comprehensive timezone management for accurate energy data processing across different geographical regions
+- **Enhanced dashboard metrics layout** - Improved dashboard layout with optimized metrics display and better visual organization
+- **Code formatting and development environment enhancements** - Enhanced development tooling with improved code formatting and developer experience
+
+**User Experience Improvements:**
+- **Timezone-aware data processing** - More accurate energy calculations considering local timezone differences
+- **Optimized dashboard layout** - Better visual hierarchy and metrics presentation for improved data analysis
+- **Enhanced development environment** - Improved code formatting rules and development workflow optimization
+
+**Technical Enhancements:**
+- **Timezone utility improvements** - Enhanced date-time handling for global energy data processing
+- **Dashboard component optimization** - Better performance and visual consistency across dashboard metrics
+- **Development tooling upgrades** - Improved code quality tools and formatting standards
+
 ### v0.1.5 (August 17, 2025)
 
 **Advanced Analytics and Performance Enhancements**
