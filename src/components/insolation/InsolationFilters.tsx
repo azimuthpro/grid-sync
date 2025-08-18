@@ -10,10 +10,12 @@ interface InsolationFiltersProps {
   onFiltersChange: (filters: {
     province?: string
     city?: string
+    showForecast?: boolean
   }) => void
   initialFilters?: {
     province?: string
     city?: string
+    showForecast?: boolean
   }
   className?: string
 }
@@ -25,6 +27,7 @@ export function InsolationFilters({
 }: InsolationFiltersProps) {
   const [province, setProvince] = useState(initialFilters.province || 'all')
   const [city, setCity] = useState(initialFilters.city || 'all')
+  const [showForecast, setShowForecast] = useState(initialFilters.showForecast ?? true)
   const [isExpanded, setIsExpanded] = useState(false)
   const hasInitialized = useRef(false)
 
@@ -49,9 +52,10 @@ export function InsolationFilters({
     const filters = {
       province: province === 'all' ? undefined : province,
       city: city === 'all' ? undefined : city,
+      showForecast,
     }
     onFiltersChange(filters)
-  }, [province, city, onFiltersChange])
+  }, [province, city, showForecast, onFiltersChange])
 
   // Auto-apply filters with debounce (skip initial mount)
   useEffect(() => {
@@ -70,10 +74,11 @@ export function InsolationFilters({
   const handleClearFilters = () => {
     setProvince('all')
     setCity('all')
+    setShowForecast(true)
     onFiltersChange({})
   }
 
-  const hasActiveFilters = province !== 'all' || city !== 'all'
+  const hasActiveFilters = province !== 'all' || city !== 'all' || !showForecast
 
 
   return (
@@ -156,7 +161,30 @@ export function InsolationFilters({
               <p className="text-xs text-gray-500 mt-1">Ładowanie miast...</p>
             )}
           </div>
+        </div>
 
+        {/* Forecast toggle */}
+        <div className="mt-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={showForecast}
+              onChange={(e) => setShowForecast(e.target.checked)}
+              className="sr-only"
+            />
+            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+              showForecast ? 'bg-blue-600' : 'bg-gray-600'
+            }`}>
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  showForecast ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </div>
+            <span className="ml-3 text-sm font-medium text-gray-300">
+              Pokaż prognozy
+            </span>
+          </label>
         </div>
       </div>
     </div>

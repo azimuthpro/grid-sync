@@ -9,9 +9,10 @@ import { InsolationDataTable } from '@/components/insolation/InsolationDataTable
 import { useInsolation, useInsolationChart, useLatestDate } from '@/hooks/useInsolation'
 import type { InsolationData } from '@/types'
 
-interface InsolationFilters extends Record<string, string | undefined> {
+interface InsolationFilters extends Record<string, string | boolean | undefined> {
   province?: string
   city?: string
+  showForecast?: boolean
 }
 
 type TimeRange = '24h' | '3d' | '7d' | '1m'

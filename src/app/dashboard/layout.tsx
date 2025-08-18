@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useSupabase } from '@/hooks/useSupabase'
-import { 
-  Gauge, 
-  MapPin, 
-  Settings, 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useSupabase } from '@/hooks/useSupabase';
+import {
+  Gauge,
+  MapPin,
+  Settings,
   LogOut,
   BarChart3,
   Sun,
-  FileSpreadsheet
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+  FileSpreadsheet,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Start', href: '/dashboard', icon: Gauge },
@@ -22,70 +22,72 @@ const navigation = [
   { name: 'Nasłonecznienie', href: '/dashboard/insolation', icon: Sun },
   { name: 'Raporty', href: '/dashboard/reports', icon: FileSpreadsheet },
   { name: 'Ustawienia', href: '/dashboard/settings', icon: Settings },
-]
+];
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const pathname = usePathname()
-  const supabase = useSupabase()
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
+  const supabase = useSupabase();
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
       if (error) {
-        console.error('Dashboard: Błąd pobierania użytkownika:', error)
-        router.push('/login')
-        return
+        console.error('Dashboard: Błąd pobierania użytkownika:', error);
+        router.push('/login');
+        return;
       }
-      
+
       if (!user) {
-        router.push('/login')
-        return
+        router.push('/login');
+        return;
       }
-      setLoading(false)
-    }
+      setLoading(false);
+    };
 
-    getUser()
+    getUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        
-        if (event === 'SIGNED_OUT' || !session) {
-          router.push('/login')
-        } else if (session) {
-          setLoading(false)
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        router.push('/login');
+      } else if (session) {
+        setLoading(false);
       }
-    )
+    });
 
-    return () => subscription.unsubscribe()
-  }, [router, supabase.auth])
+    return () => subscription.unsubscribe();
+  }, [router, supabase.auth]);
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Błąd wylogowania:', error)
-        throw error
+        console.error('Błąd wylogowania:', error);
+        throw error;
       }
     } catch (error) {
-      console.error('Błąd podczas wylogowania:', error)
-      window.location.href = '/login'
+      console.error('Błąd podczas wylogowania:', error);
+      window.location.href = '/login';
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -94,15 +96,14 @@ export default function DashboardLayout({
       <div className="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800 shadow-2xl">
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center h-16 px-6 border-b border-gray-800">
-            <BarChart3 className="h-8 w-8 text-blue-500" />
-            <span className="ml-2 text-xl font-bold text-gray-100">GridSync</span>
+          <div className="flex items-center h-16 px-6 mt-4">
+            <span className="text-xl font-bold text-gray-100">GridSync</span>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.name}
@@ -110,14 +111,14 @@ export default function DashboardLayout({
                   className={cn(
                     'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors',
                     isActive
-                      ? 'bg-blue-900 text-blue-300 border border-blue-700'
+                      ? 'bg-blue-900 text-white'
                       : 'text-gray-300 hover:bg-gray-800 hover:text-gray-100'
                   )}
                 >
                   <item.icon className="h-5 w-5 mr-3" />
                   {item.name}
                 </Link>
-              )
+              );
             })}
           </nav>
 
@@ -136,10 +137,8 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <div className="pl-64">
-        <main className="min-h-screen">
-          {children}
-        </main>
+        <main className="min-h-screen">{children}</main>
       </div>
     </div>
-  )
+  );
 }

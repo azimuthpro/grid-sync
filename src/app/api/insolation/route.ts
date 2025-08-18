@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const city = searchParams.get('city')
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
+    const showForecast = searchParams.get('showForecast') !== 'false' // Default to true
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const sortBy = searchParams.get('sortBy') || 'date'
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
     
     // Handle chart views with SQL grouping and default date ranges
     if (viewType) {
-      return await handleChartData(supabase, viewType, { province, city, startDate, endDate })
+      return await handleChartData(supabase, viewType, { province, city, startDate, endDate, showForecast })
     }
     
     // Handle table view with pagination
@@ -84,6 +85,12 @@ export async function GET(request: NextRequest) {
       query = query.lte('date', endDate)
     }
 
+    // Filter forecast dates if showForecast is false
+    if (!showForecast) {
+      const currentDate = new Date().toISOString().split('T')[0]
+      query = query.lte('date', currentDate)
+    }
+
 
     // Get total count for pagination with same filters as data query
     let countQuery = supabase
@@ -102,6 +109,10 @@ export async function GET(request: NextRequest) {
     }
     if (endDate) {
       countQuery = countQuery.lte('date', endDate)
+    }
+    if (!showForecast) {
+      const currentDate = new Date().toISOString().split('T')[0]
+      countQuery = countQuery.lte('date', currentDate)
     }
 
     const { count } = await countQuery
@@ -139,7 +150,8 @@ export async function GET(request: NextRequest) {
         province,
         city,
         startDate,
-        endDate
+        endDate,
+        showForecast
       },
       sorting: {
         sortBy,
@@ -165,6 +177,7 @@ async function handleChartData(
     city?: string | null
     startDate?: string | null
     endDate?: string | null
+    showForecast?: boolean
   }
 ) {
   const now = new Date()
@@ -232,6 +245,10 @@ async function handleChartData(
       if (filters.city && filters.city !== 'all') {
         baseQuery = baseQuery.eq('city', filters.city)
       }
+      if (filters.showForecast === false) {
+        const currentDate = new Date().toISOString().split('T')[0]
+        baseQuery = baseQuery.lte('date', currentDate)
+      }
       
       const { data: rawData, error } = await baseQuery
       if (error) throw error
@@ -282,6 +299,10 @@ async function handleChartData(
       if (filters.city && filters.city !== 'all') {
         baseQuery = baseQuery.eq('city', filters.city)
       }
+      if (filters.showForecast === false) {
+        const currentDate = new Date().toISOString().split('T')[0]
+        baseQuery = baseQuery.lte('date', currentDate)
+      }
       
       const { data: rawData, error } = await baseQuery
       if (error) throw error
@@ -327,6 +348,10 @@ async function handleChartData(
       if (filters.city && filters.city !== 'all') {
         baseQuery = baseQuery.eq('city', filters.city)
       }
+      if (filters.showForecast === false) {
+        const currentDate = new Date().toISOString().split('T')[0]
+        baseQuery = baseQuery.lte('date', currentDate)
+      }
       
       const { data: rawData, error } = await baseQuery
       if (error) throw error
@@ -371,7 +396,8 @@ async function handleChartData(
       dateRange: { startDate, endDate },
       filters: {
         province: filters.province,
-        city: filters.city
+        city: filters.city,
+        showForecast: filters.showForecast
       }
     })
     

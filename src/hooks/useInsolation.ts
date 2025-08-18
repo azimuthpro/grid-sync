@@ -11,6 +11,7 @@ interface InsolationFilters {
   sortOrder?: 'asc' | 'desc'
   startDate?: string
   endDate?: string
+  showForecast?: boolean
 }
 
 interface InsolationResponse {

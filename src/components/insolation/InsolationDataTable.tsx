@@ -33,7 +33,7 @@ interface InsolationDataTableProps {
     sortBy: string
     sortOrder: 'asc' | 'desc'
   }
-  filters?: Record<string, string | number | undefined>
+  filters?: Record<string, string | number | boolean | undefined>
   className?: string
   currentDate?: string
 }

@@ -1,0 +1,15 @@
+node_modules
+.next
+dist
+build
+.env*
+*.log
+.vercel
+.git
+package-lock.json
+*.svg
+*.png
+*.jpg
+*.jpeg
+*.gif
+public/

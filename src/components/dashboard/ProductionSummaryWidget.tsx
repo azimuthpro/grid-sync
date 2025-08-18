@@ -1,99 +1,111 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Zap, Sun, TrendingUp, Activity, Home } from 'lucide-react'
-import { useLocations } from '@/hooks/useLocations'
-import { formatProduction } from '@/lib/utils/pv-production'
+import { useState, useEffect } from 'react';
+import { Sun } from 'lucide-react';
+import { useLocations } from '@/hooks/useLocations';
+import { formatProduction } from '@/lib/utils/pv-production';
 
 interface ProductionSummaryWidgetProps {
-  className?: string
+  className?: string;
 }
 
 interface LocationProduction {
-  locationId: string
-  currentProduction: number
-  dailyProduction: number
-  currentConsumption: number
-  dailyConsumption: number
-  insolationPercentage: number
-  selfConsumptionRate: number
-  energyBalance: number
+  locationId: string;
+  currentProduction: number;
+  dailyProduction: number;
+  currentConsumption: number;
+  dailyConsumption: number;
+  insolationPercentage: number;
+  selfConsumptionRate: number;
+  energyBalance: number;
 }
 
 interface ProductionSummaryResponse {
-  success: boolean
-  data: LocationProduction[]
+  success: boolean;
+  data: LocationProduction[];
   metadata: {
-    date: string
-    hour: number
-    totalLocations: number
-  }
+    date: string;
+    hour: number;
+    totalLocations: number;
+  };
 }
 
-export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWidgetProps) {
-  const { data: locations = [], isLoading: locationsLoading } = useLocations()
-  const [locationProductions, setLocationProductions] = useState<LocationProduction[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export function ProductionSummaryWidget({
+  className = '',
+}: ProductionSummaryWidgetProps) {
+  const { data: locations = [], isLoading: locationsLoading } = useLocations();
+  const [locationProductions, setLocationProductions] = useState<
+    LocationProduction[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProductionData = async () => {
       if (locationsLoading || locations.length === 0) {
-        setIsLoading(false)
-        return
+        setIsLoading(false);
+        return;
       }
 
       try {
-        setIsLoading(true)
-        setError(null)
+        setIsLoading(true);
+        setError(null);
 
         // Prepare location IDs for API call
-        const locationIds = locations.map(loc => loc.id).join(',')
-        
-        const response = await fetch(`/api/production-summary?locationIds=${locationIds}`)
-        
+        const locationIds = locations.map((loc) => loc.id).join(',');
+
+        const response = await fetch(
+          `/api/production-summary?locationIds=${locationIds}`
+        );
+
         if (!response.ok) {
-          throw new Error(`API error: ${response.status}`)
+          throw new Error(`API error: ${response.status}`);
         }
 
-        const data: ProductionSummaryResponse = await response.json()
-        
+        const data: ProductionSummaryResponse = await response.json();
+
         if (!data.success) {
-          throw new Error('API returned error response')
+          throw new Error('API returned error response');
         }
 
-        setLocationProductions(data.data)
+        setLocationProductions(data.data);
       } catch (err) {
-        console.error('Failed to fetch production summary:', err)
-        setError('Nie udało się pobrać danych produkcji')
+        console.error('Failed to fetch production summary:', err);
+        setError('Nie udało się pobrać danych produkcji');
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchProductionData()
-    
+    fetchProductionData();
+
     // Refresh data every 5 minutes
-    const interval = setInterval(fetchProductionData, 5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [locations, locationsLoading])
+    const interval = setInterval(fetchProductionData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [locations, locationsLoading]);
 
-  const totalCurrentProduction = locationProductions.reduce((sum, loc) => sum + loc.currentProduction, 0)
-  const totalDailyProduction = locationProductions.reduce((sum, loc) => sum + loc.dailyProduction, 0)
-  const totalCurrentConsumption = locationProductions.reduce((sum, loc) => sum + loc.currentConsumption, 0)
-  const totalEnergyBalance = locationProductions.reduce((sum, loc) => sum + loc.energyBalance, 0)
-  const averageInsolation = locationProductions.length > 0 
-    ? locationProductions.reduce((sum, loc) => sum + loc.insolationPercentage, 0) / locationProductions.length
-    : 0
+  const totalCurrentProduction = locationProductions.reduce(
+    (sum, loc) => sum + loc.currentProduction,
+    0
+  );
+  const totalCurrentConsumption = locationProductions.reduce(
+    (sum, loc) => sum + loc.currentConsumption,
+    0
+  );
+  const totalEnergyBalance = locationProductions.reduce(
+    (sum, loc) => sum + loc.energyBalance,
+    0
+  );
 
   // Calculate overall self-consumption rate (how much produced energy is being used locally)
-  const selfConsumptionPercentage = totalCurrentProduction > 0 
-    ? Math.min((totalCurrentConsumption / totalCurrentProduction) * 100, 100)
-    : 0
+  const selfConsumptionPercentage =
+    totalCurrentProduction > 0
+      ? Math.min((totalCurrentConsumption / totalCurrentProduction) * 100, 100)
+      : 0;
 
   if (locationsLoading || isLoading) {
     return (
-      <div className={`bg-gray-900 rounded-lg border border-gray-800 ${className}`}>
+      <div className={`rounded-lg ${className}`}>
         <div className="p-6">
           <div className="animate-pulse">
             <div className="h-6 bg-gray-700 rounded w-1/2 mb-4"></div>
@@ -108,162 +120,175 @@ export function ProductionSummaryWidget({ className = '' }: ProductionSummaryWid
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (locations.length === 0) {
     return (
-      <div className={`bg-gray-900 rounded-lg border border-gray-800 ${className}`}>
+      <div className={`rounded-lg ${className}`}>
         <div className="p-6 text-center">
           <Sun className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-          <p className="text-gray-400">Brak lokalizacji do monitorowania produkcji</p>
+          <p className="text-gray-400">
+            Brak lokalizacji do monitorowania produkcji
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className={`bg-gray-900 rounded-lg border border-gray-800 ${className}`}>
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-100">Produkcja energii</h2>
-        </div>
-      </div>
-
+    <div className={`rounded-lg ${className}`}>
       {error && (
         <div className="p-4 bg-red-950/50 border-b border-red-500/20">
           <p className="text-red-400 text-sm">{error}</p>
         </div>
       )}
 
-      <div className="p-6">
-        {/* Main metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <div className="p-2 bg-emerald-950/50 rounded-lg ring-1 ring-emerald-500/20">
-                <Zap className="h-5 w-5 text-emerald-500" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Aktualna moc</p>
-            <p className="text-xl font-bold text-emerald-400">
-              {formatProduction(totalCurrentProduction)}
-            </p>
-          </div>
-
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <div className="p-2 bg-blue-950/50 rounded-lg ring-1 ring-blue-500/20">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Dziś wyprodukowano</p>
-            <p className="text-xl font-bold text-blue-400">
-              {formatProduction(totalDailyProduction, 'kWh')}
-            </p>
-          </div>
-
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <div className="p-2 bg-orange-950/50 rounded-lg ring-1 ring-orange-500/20">
-                <Home className="h-5 w-5 text-orange-500" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Aktualne zużycie</p>
-            <p className="text-xl font-bold text-orange-400">
-              {formatProduction(totalCurrentConsumption)}
-            </p>
-          </div>
-
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <div className="p-2 bg-amber-950/50 rounded-lg ring-1 ring-amber-500/20">
-                <Sun className="h-5 w-5 text-amber-500" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Średnie nasłonecznienie</p>
-            <p className="text-xl font-bold text-amber-400">
-              {averageInsolation.toFixed(0)}%
-            </p>
-          </div>
-
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <div className="p-2 bg-purple-950/50 rounded-lg ring-1 ring-purple-500/20">
-                <Activity className="h-5 w-5 text-purple-500" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-400 mb-1">Autokonsumpcja</p>
-            <p className="text-xl font-bold text-purple-400">
-              {selfConsumptionPercentage.toFixed(0)}%
-            </p>
-          </div>
-        </div>
-
-        {/* Self-consumption efficiency indicator */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <span>Poziom autokonsumpcji energii</span>
-            <span>{totalCurrentConsumption.toFixed(1)} / {totalCurrentProduction.toFixed(1)} kW</span>
-          </div>
-          <div className="w-full bg-gray-700 rounded-full h-3">
-            <div
-              className={`h-3 rounded-full transition-all duration-300 ${
-                selfConsumptionPercentage >= 80 ? 'bg-emerald-500' :
-                selfConsumptionPercentage >= 60 ? 'bg-blue-500' :
-                selfConsumptionPercentage >= 40 ? 'bg-amber-500' :
-                selfConsumptionPercentage > 0 ? 'bg-red-500' :
-                'bg-gray-500'
-              }`}
-              style={{ width: `${Math.min(selfConsumptionPercentage, 100)}%` }}
-            ></div>
-          </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>{totalEnergyBalance >= 0 ? 'Nadwyżka' : 'Niedobór'}: {Math.abs(totalEnergyBalance).toFixed(1)} kW</span>
-            <span>{totalEnergyBalance >= 0 ? 'Export do sieci' : 'Import z sieci'}</span>
-          </div>
-        </div>
-
-        {/* Location breakdown */}
-        {locationProductions.length > 1 && (
+      {/* Self-consumption efficiency indicator */}
+      <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+        <div className="flex justify-between items-center mb-3">
           <div>
-            <h3 className="text-sm font-medium text-gray-300 mb-3">Podział na lokalizacje</h3>
-            <div className="space-y-2">
-              {locationProductions.map((locationProd) => {
-                const location = locations.find(loc => loc.id === locationProd.locationId)
-                if (!location) return null
-                
-                return (
-                  <div
-                    key={locationProd.locationId}
-                    className="flex items-center justify-between p-3 bg-gray-800 rounded-lg"
-                  >
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-3 bg-blue-500"></div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-200">
-                          {location.name}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {location.city} • {locationProd.insolationPercentage.toFixed(0)}%
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
+            <h4 className="text-sm font-medium text-gray-200">
+              Autokonsumpcja energii
+            </h4>
+            <p className="text-xs text-gray-400">
+              Wykorzystywanie wyprodukowanej energii na miejscu
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-lg font-bold text-gray-100">
+              {selfConsumptionPercentage.toFixed(0)}%
+            </div>
+            <div className="text-xs text-gray-400">
+              {totalCurrentConsumption.toFixed(1)} /{' '}
+              {totalCurrentProduction.toFixed(1)} kW
+            </div>
+          </div>
+        </div>
+
+        <div className="relative w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ease-out relative ${
+              selfConsumptionPercentage >= 90
+                ? 'bg-gradient-to-r from-emerald-600 to-emerald-400'
+                : selfConsumptionPercentage >= 70
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-400'
+                  : selfConsumptionPercentage >= 50
+                    ? 'bg-gradient-to-r from-amber-600 to-amber-400'
+                    : selfConsumptionPercentage > 0
+                      ? 'bg-gradient-to-r from-red-600 to-red-400'
+                      : 'bg-gray-500'
+            }`}
+            style={{ width: `${Math.min(selfConsumptionPercentage, 100)}%` }}
+          >
+            {selfConsumptionPercentage > 15 && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xs font-semibold text-white drop-shadow">
+                  {selfConsumptionPercentage.toFixed(0)}%
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center mt-3">
+          <div className="flex items-center space-x-4">
+            {/* Only show energy balance info when production is meaningful (> 0.1 kW) */}
+            {totalCurrentProduction > 0.1 ? (
+              <div
+                className={`text-xs font-medium ${
+                  totalEnergyBalance >= 0 ? 'text-emerald-400' : 'text-red-400'
+                }`}
+              >
+                {totalEnergyBalance >= 0 ? '↗ Nadwyżka' : '↙ Niedobór'}:{' '}
+                {Math.abs(totalEnergyBalance).toFixed(1)} kW
+              </div>
+            ) : (
+              <div className="text-xs font-medium text-gray-400">
+                ⚡ Zasilanie z sieci: {totalCurrentConsumption.toFixed(1)} kW
+              </div>
+            )}
+          </div>
+          <div
+            className={`text-xs px-2 py-1 rounded-full ${
+              selfConsumptionPercentage >= 90
+                ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-500/20'
+                : selfConsumptionPercentage >= 70
+                  ? 'bg-blue-950/50 text-blue-400 border border-blue-500/20'
+                  : selfConsumptionPercentage >= 50
+                    ? 'bg-amber-950/50 text-amber-400 border border-amber-500/20'
+                    : 'bg-red-950/50 text-red-400 border border-red-500/20'
+            }`}
+          >
+            {selfConsumptionPercentage >= 90
+              ? 'Bardzo efektywne'
+              : selfConsumptionPercentage >= 70
+                ? 'Efektywne'
+                : selfConsumptionPercentage >= 50
+                  ? 'Umiarkowane'
+                  : 'Wymaga optymalizacji'}
+          </div>
+        </div>
+      </div>
+
+      {/* Location breakdown */}
+      {locationProductions.length > 1 && (
+        <div>
+          <div className="space-y-4">
+            {locationProductions.map((locationProd) => {
+              const location = locations.find(
+                (loc) => loc.id === locationProd.locationId
+              );
+              if (!location) return null;
+
+              return (
+                <div
+                  key={locationProd.locationId}
+                  className="flex items-center justify-between p-3 bg-gray-800 rounded-lg"
+                >
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full mr-3 bg-blue-500"></div>
+                    <div>
                       <p className="text-sm font-medium text-gray-200">
-                        {formatProduction(locationProd.currentProduction)} / {formatProduction(locationProd.currentConsumption)}
+                        {location.name}
                       </p>
                       <p className="text-xs text-gray-400">
-                        Autokonsumpcja: {locationProd.selfConsumptionRate.toFixed(0)}%
+                        {location.city} •{' '}
+                        {locationProd.insolationPercentage.toFixed(0)}%
                       </p>
                     </div>
                   </div>
-                )
-              })}
-            </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-200">
+                      {formatProduction(locationProd.currentProduction)} /{' '}
+                      {formatProduction(locationProd.currentConsumption)}
+                    </p>
+                    <div className="flex items-center justify-end space-x-2">
+                      <p className="text-xs text-gray-400">
+                        Autokonsumpcja:{' '}
+                        {locationProd.selfConsumptionRate.toFixed(0)}%
+                      </p>
+                      <span className="text-xs">•</span>
+                      <p
+                        className={`text-xs font-medium ${
+                          locationProd.energyBalance > 0
+                            ? 'text-emerald-400'
+                            : locationProd.energyBalance < 0
+                              ? 'text-red-400'
+                              : 'text-white'
+                        }`}
+                      >
+                        {locationProd.energyBalance > 0 ? '+' : ''}
+                        {locationProd.energyBalance.toFixed(1)} kW
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
