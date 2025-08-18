@@ -101,6 +101,21 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-gray-900 p-6 rounded-lg transition-all duration-300">
           <div className="flex items-center">
+            <div className="p-2 bg-amber-900 rounded-lg">
+              <Sun className="h-6 w-6 text-amber-400" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-400">
+                Aktualne nasłonecznienie
+              </p>
+              <p className="text-2xl font-bold text-gray-100">
+                {averageInsolation.toFixed(0)}%
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gray-900 p-6 rounded-lg transition-all duration-300">
+          <div className="flex items-center">
             <div className="p-2 bg-emerald-900 rounded-lg">
               <Zap className="h-6 w-6 text-emerald-400" />
             </div>
@@ -122,7 +137,7 @@ export default function DashboardPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-400">
-                Aktualnie produkowana moc
+                Aktualna moc instalacji
               </p>
               <p className="text-2xl font-bold text-gray-100">
                 {formatProduction(totalCurrentProduction)}
@@ -142,22 +157,6 @@ export default function DashboardPage() {
               </p>
               <p className="text-2xl font-bold text-gray-100">
                 {formatProduction(totalCurrentConsumption, 'kWh')}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gray-900 p-6 rounded-lg transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-2 bg-amber-900 rounded-lg">
-              <Sun className="h-6 w-6 text-amber-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">
-                Aktualne nasłonecznienie
-              </p>
-              <p className="text-2xl font-bold text-gray-100">
-                {averageInsolation.toFixed(0)}%
               </p>
             </div>
           </div>

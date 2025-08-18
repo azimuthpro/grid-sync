@@ -10,7 +10,6 @@ import {
   MapPin,
   Settings,
   LogOut,
-  BarChart3,
   Sun,
   FileSpreadsheet,
 } from 'lucide-react';

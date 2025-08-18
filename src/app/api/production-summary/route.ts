@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServiceClient } from '@/lib/supabase/service'
 import { calculatePVProduction, calculateDailyProduction } from '@/lib/utils/pv-production'
-import { getProvinceForCity } from '@/types'
+import { getProvinceForCity, APP_TIMEZONE } from '@/types'
 import type { UserLocation, InsolationData, ConsumptionProfile } from '@/types'
+import { toZonedTime } from 'date-fns-tz'
 
 
 export async function GET(request: NextRequest) {
@@ -20,10 +21,11 @@ export async function GET(request: NextRequest) {
     const locationIdArray = locationIds.split(',')
     const supabase = createSupabaseServiceClient()
 
-    // Get current date and hour
+    // Get current date and hour in Warsaw timezone
     const now = new Date()
-    const currentDate = now.toISOString().split('T')[0]
-    const currentHour = now.getHours()
+    const warsawTime = toZonedTime(now, APP_TIMEZONE)
+    const currentDate = warsawTime.toISOString().split('T')[0]
+    const currentHour = warsawTime.getHours()
 
     // Fetch locations data
     const { data: locations, error: locationsError } = await supabase
@@ -81,7 +83,7 @@ export async function GET(request: NextRequest) {
 
         const currentHourData = insolationData?.find((data: InsolationData) => data.hour === currentHour)
         const currentInsolation = currentHourData?.insolation_percentage || 0
-        const systemLossesDecimal = location.system_losses ? location.system_losses / 100 : undefined
+        const systemLossesDecimal = location.system_losses || undefined
         const currentProduction = calculatePVProduction(location.pv_power_kwp, currentInsolation, systemLossesDecimal)
         
         // Calculate daily production from available hourly data
@@ -98,8 +100,8 @@ export async function GET(request: NextRequest) {
         let dailyConsumption = 0
 
         if (!consumptionError && consumptionProfiles) {
-          // Get current day of week (0 = Sunday, 1 = Monday, etc.)
-          const currentDayOfWeek = now.getDay()
+          // Get current day of week in Warsaw timezone (0 = Sunday, 1 = Monday, etc.)
+          const currentDayOfWeek = warsawTime.getDay()
           
           // Find consumption for current hour
           const currentHourProfile = consumptionProfiles.find(

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Sun } from 'lucide-react';
 import { useLocations } from '@/hooks/useLocations';
-import { formatProduction } from '@/lib/utils/pv-production';
 
 interface ProductionSummaryWidgetProps {
   className?: string;
@@ -200,8 +199,10 @@ export function ProductionSummaryWidget({
                   totalEnergyBalance >= 0 ? 'text-emerald-400' : 'text-red-400'
                 }`}
               >
-                {totalEnergyBalance >= 0 ? '↗ Nadwyżka' : '↙ Niedobór'}:{' '}
-                {Math.abs(totalEnergyBalance).toFixed(1)} kW
+                {totalEnergyBalance >= 0
+                  ? '↗ Nadwyżka energii z instalacji PV'
+                  : '↙ Niedobór energii z instalacji PV'}
+                : {Math.abs(totalEnergyBalance).toFixed(1)} kW
               </div>
             ) : (
               <div className="text-xs font-medium text-gray-400">
@@ -230,65 +231,6 @@ export function ProductionSummaryWidget({
           </div>
         </div>
       </div>
-
-      {/* Location breakdown */}
-      {locationProductions.length > 1 && (
-        <div>
-          <div className="space-y-4">
-            {locationProductions.map((locationProd) => {
-              const location = locations.find(
-                (loc) => loc.id === locationProd.locationId
-              );
-              if (!location) return null;
-
-              return (
-                <div
-                  key={locationProd.locationId}
-                  className="flex items-center justify-between p-3 bg-gray-800 rounded-lg"
-                >
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 rounded-full mr-3 bg-blue-500"></div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-200">
-                        {location.name}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {location.city} •{' '}
-                        {locationProd.insolationPercentage.toFixed(0)}%
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-200">
-                      {formatProduction(locationProd.currentProduction)} /{' '}
-                      {formatProduction(locationProd.currentConsumption)}
-                    </p>
-                    <div className="flex items-center justify-end space-x-2">
-                      <p className="text-xs text-gray-400">
-                        Autokonsumpcja:{' '}
-                        {locationProd.selfConsumptionRate.toFixed(0)}%
-                      </p>
-                      <span className="text-xs">•</span>
-                      <p
-                        className={`text-xs font-medium ${
-                          locationProd.energyBalance > 0
-                            ? 'text-emerald-400'
-                            : locationProd.energyBalance < 0
-                              ? 'text-red-400'
-                              : 'text-white'
-                        }`}
-                      >
-                        {locationProd.energyBalance > 0 ? '+' : ''}
-                        {locationProd.energyBalance.toFixed(1)} kW
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

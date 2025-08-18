@@ -1,6 +1,8 @@
 import useSWR from 'swr'
 import { useState, useCallback } from 'react'
 import type { InsolationData } from '@/types'
+import { APP_TIMEZONE } from '@/types'
+import { toZonedTime } from 'date-fns-tz'
 
 interface InsolationFilters {
   province?: string
@@ -306,8 +308,9 @@ export function useInsolationExport() {
 
 // Helper hook for real-time data updates
 export function useInsolationLive(city: string, refreshInterval = 300000) { // 5 minutes
-  const today = new Date().toISOString().split('T')[0]
-  const currentHour = new Date().getHours()
+  const warsawTime = toZonedTime(new Date(), APP_TIMEZONE)
+  const today = warsawTime.toISOString().split('T')[0]
+  const currentHour = warsawTime.getHours()
 
   const { data, error, isLoading, mutate } = useSWR<InsolationResponse>(
     city ? `/api/insolation?city=${city}&startDate=${today}&endDate=${today}` : null,
