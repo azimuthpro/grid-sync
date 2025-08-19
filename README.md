@@ -148,6 +148,26 @@ src/
 
 ## Version History
 
+### v0.1.7 (August 19, 2025)
+
+**Enhanced Reporting and Analytics Integration**
+
+**Major Features:**
+- **MWE report generation system** - Comprehensive report generation infrastructure for advanced energy balance analysis
+- **Insolation charts API endpoint** - New API endpoint with aggregation functions for enhanced data visualization and analysis
+- **Vercel Analytics integration** - Comprehensive user analytics and performance tracking for improved user experience insights
+
+**User Experience Improvements:**
+- **Enhanced consumption profile UI** - Improved query handling and formatting for better data presentation
+- **Advanced reporting capabilities** - New MWE (Measured Withdrawal Energy) report generation for detailed energy analysis
+- **Improved code formatting** - Enhanced code readability and maintainability across the reporting system
+
+**Technical Enhancements:**
+- **API aggregation functions** - Enhanced insolation data processing with advanced aggregation capabilities
+- **Analytics infrastructure** - Integrated Vercel Analytics for comprehensive application monitoring
+- **Query optimization** - Improved consumption profile data queries for better performance
+- **Documentation updates** - Streamlined CLAUDE.md for improved development guidance
+
 ### v0.1.6 (August 18, 2025)
 
 **Enhanced Timezone Support and Dashboard Improvements**

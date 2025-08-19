@@ -59,14 +59,16 @@ Use `/help` to see all available commands.
 
 ## Recent Updates
 
-### v0.1.6 (Current) - Latest Architecture Context
+### v0.1.7 (Current) - Latest Architecture Context
 
-**API Routes**: `/api/insolation` (CRUD + CRON auth), `/api/locations/[id]/consumption` (batch updates), `/api/chat` (AI), `/api/locations` (RLS)
+**API Routes**: `/api/insolation` (CRUD + CRON auth + aggregation functions), `/api/locations/[id]/consumption` (batch updates), `/api/chat` (AI), `/api/locations` (RLS)
 
-**Key Components**: InsolationChart/Card/Overview, ConsumptionProfileEditor, AI assistant chat
+**Key Components**: InsolationChart/Card/Overview, ConsumptionProfileEditor, AI assistant chat, MWE report generation system
 
-**Data Flow**: Auth → Dashboard (`/dashboard/insolation`, `/locations/[id]/consumption`) → Location mgmt → Consumption profiling → CSV reports
+**Data Flow**: Auth → Dashboard (`/dashboard/insolation`, `/locations/[id]/consumption`) → Location mgmt → Consumption profiling → CSV/MWE reports
 
 **Utils**: `lib/utils/pv-production.ts` (energy calculations), `lib/utils/consumption.ts` (grid transformations)
 
-**Processing**: Automated insolation data pipeline with CRON integration, 168-point consumption profiles, real-time PV production calculations
+**Processing**: Automated insolation data pipeline with CRON integration, 168-point consumption profiles, real-time PV production calculations, MWE report generation
+
+**Analytics**: Vercel Analytics integration for comprehensive user behavior tracking and performance monitoring
