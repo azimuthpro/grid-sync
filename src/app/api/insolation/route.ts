@@ -204,9 +204,9 @@ async function handleChartData(
       break
     case 'daily':
       // Last 7 days ending at the last date in database
-      const endDateDaily = new Date(lastDateInDb)
-      endDateDaily.setDate(endDateDaily.getDate() - 6) // Go back 6 days to get 7 days total
-      defaultStartDate = endDateDaily.toISOString().split('T')[0]
+      const startDateDaily = new Date(lastDateInDb)
+      startDateDaily.setDate(startDateDaily.getDate() - 6) // Go back 6 days to get 7 days total
+      defaultStartDate = startDateDaily.toISOString().split('T')[0]
       defaultEndDate = lastDateInDb
       break
     case 'monthly':
@@ -288,7 +288,7 @@ async function handleChartData(
       // Daily view - group by date
       let baseQuery = supabase
         .from('insolation_data')
-        .select('date, insolation_percentage, city, province')
+        .select('date, hour, insolation_percentage, city, province')
         .gte('date', startDate)
         .lte('date', endDate)
       

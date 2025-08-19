@@ -1,7 +1,7 @@
 ---
-description: "Bump version following semantic versioning principles"
-allowed-tools: ["Bash", "Read", "Edit", "MultiEdit"]
-argument-hint: "[major|minor|patch] (optional - if not provided, will analyze git history)"
+description: 'Bump version following semantic versioning principles'
+allowed-tools: ['Bash', 'Read', 'Edit', 'MultiEdit']
+argument-hint: '[major|minor|patch] (optional - if not provided, will analyze git history)'
 ---
 
 # Bump Version Command
@@ -12,7 +12,7 @@ This command implements semantic versioning for the GridSync project.
 
 - `/bumpv` - Analyze git history and determine appropriate bump
 - `/bumpv patch` - Force a patch version bump
-- `/bumpv minor` - Force a minor version bump  
+- `/bumpv minor` - Force a minor version bump
 - `/bumpv major` - Force a major version bump
 
 ## Process
@@ -57,6 +57,7 @@ Follow [Semantic Versioning](https://semver.org/) principles for all version bum
 ### When analyzing git history to determine version bump level:
 
 **MAJOR (Breaking Changes):**
+
 - Commits with `BREAKING CHANGE:` in footer
 - API route changes that modify request/response structure
 - Database schema changes requiring migrations
@@ -64,6 +65,7 @@ Follow [Semantic Versioning](https://semver.org/) principles for all version bum
 - Changed authentication or security model
 
 **MINOR (New Features):**
+
 - `feat:` commits adding new functionality
 - New API endpoints
 - New UI components or pages
@@ -71,8 +73,9 @@ Follow [Semantic Versioning](https://semver.org/) principles for all version bum
 - Enhanced existing features without breaking changes
 
 **PATCH (Bug Fixes & Improvements):**
+
 - `fix:` commits resolving bugs
-- `refactor:` commits improving code without changing functionality  
+- `refactor:` commits improving code without changing functionality
 - `perf:` commits improving performance
 - `style:` commits with formatting or styling changes
 - `docs:` commits updating documentation
@@ -90,6 +93,7 @@ Follow [Semantic Versioning](https://semver.org/) principles for all version bum
 ## Examples of Version Bump Analysis
 
 **PATCH Example (0.1.5 → 0.1.6):**
+
 ```bash
 git log --oneline v0.1.5..HEAD
 fix(auth): resolve login redirect issue
@@ -97,25 +101,40 @@ fix(dashboard): correct chart rendering bug
 docs: update installation instructions
 chore: update dependencies
 ```
-*Result: PATCH bump - only bug fixes and maintenance*
+
+_Result: PATCH bump - only bug fixes and maintenance_
 
 **MINOR Example (0.1.6 → 0.2.0):**
-```bash  
+
+```bash
 git log --oneline v0.1.6..HEAD
 feat(reports): add CSV export functionality
 feat(dashboard): implement energy balance charts
 fix(auth): resolve session timeout issue
 refactor(api): optimize database queries
 ```
-*Result: MINOR bump - new features with backward compatibility*
+
+_Result: MINOR bump - new features with backward compatibility_
 
 **MAJOR Example (0.2.0 → 1.0.0):**
+
 ```bash
-git log --oneline v0.2.0..HEAD  
+git log --oneline v0.2.0..HEAD
 feat(api): redesign authentication system
 
 BREAKING CHANGE: API endpoints now require JWT tokens instead of session cookies
 feat(dashboard): add real-time monitoring
 fix(reports): correct calculation errors
 ```
-*Result: MAJOR bump - breaking changes to authentication system*
+
+_Result: MAJOR bump - breaking changes to authentication system_
+
+## IMPORTANT - Clean Commit Policy
+
+Do NOT add any automatic information such as:
+
+- Co-authored-by tags
+- Generated with [tool name] messages
+- Any automated signatures or metadata
+
+Keep commit messages clean and focused only on describing all uncommitted changes made.

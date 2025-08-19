@@ -1,6 +1,6 @@
 ---
-description: "Review changes and create a git commit with proper validation"
-allowed-tools: ["Bash", "Read", "Grep", "Glob"]
+description: 'Review changes and create a git commit with proper validation'
+allowed-tools: ['Bash', 'Read', 'Grep', 'Glob']
 ---
 
 # Commit Command
@@ -28,18 +28,20 @@ This command implements the complete commit workflow for the GridSync project.
 **Format**: `<type>(<scope>): <description>` - 50 chars max, imperative mood
 **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
-**Good Examples**: 
+**Good Examples**:
+
 - `feat(dashboard): add energy balance charts`
 - `fix(auth): resolve login redirect loop`
 - `refactor(api): optimize database queries`
 
 **Avoid**: "Fixed stuff", "WIP", "Various changes"
 
-## Clean Commit Policy
+## IMPORTANT - Clean Commit Policy
 
 Do NOT add any automatic information such as:
+
 - Co-authored-by tags
-- Generated with [tool name] messages  
+- Generated with [tool name] messages
 - Any automated signatures or metadata
 
 Keep commit messages clean and focused only on describing all uncommitted changes made.

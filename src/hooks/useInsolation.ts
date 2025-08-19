@@ -158,7 +158,7 @@ export function useInsolationChart(viewType: 'hourly' | 'daily' | 'monthly', fil
     }
   })
 
-  const url = `/api/insolation?${searchParams.toString()}`
+  const url = `/api/insolation/charts?${searchParams.toString()}`
   
   const { data, error, isLoading, mutate } = useSWR<InsolationChartResponse>(
     url,
