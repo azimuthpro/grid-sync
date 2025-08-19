@@ -346,3 +346,47 @@ export interface ProductionSummaryResponse {
     totalLocations: number;
   };
 }
+
+// MWE Report types
+export interface MWEReportConfig {
+  location_id: string;
+  mwe_code: string;
+  start_date: Date;
+  end_date: Date;
+  include_pauto: boolean;
+}
+
+export interface MWEHourlyData {
+  datetime: string; // Format: "DD-MM-YYYY HH:MM"
+  pplan: number; // Planned production value
+  pauto?: number; // Auto-generation value (optional)
+}
+
+export interface MWEReportData {
+  mwe_code: string;
+  data: MWEHourlyData[];
+  location: UserLocation;
+  config: MWEReportConfig;
+}
+
+export interface MWEValidationRule {
+  field: string;
+  rule: string;
+  message: string;
+}
+
+export interface MWEValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+// MWE Format constraints
+export const MWE_CONSTRAINTS = {
+  MAX_FILE_SIZE_MB: 5,
+  MAX_FILENAME_LENGTH: 50,
+  DECIMAL_PLACES: 3,
+  VALUE_FORMAT: /^\d{1,4}(,\d{1,3})?$/, // Format: [9999,999]
+  DATE_FORMAT: /^\d{2}-\d{2}-\d{4} \d{2}:\d{2}$/, // Format: DD-MM-YYYY HH:MM
+  FUTURE_DAYS_LIMIT: 30
+} as const;
