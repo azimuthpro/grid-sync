@@ -347,8 +347,7 @@ export async function GET(request: NextRequest) {
     const { data: consumptionProfiles } = await supabase
       .from('consumption_profiles')
       .select('day_of_week, hour, consumption_kwh')
-      .eq('location_id', locationId)
-      .limit(10);
+      .eq('location_id', locationId);
 
     return NextResponse.json({
       success: true,

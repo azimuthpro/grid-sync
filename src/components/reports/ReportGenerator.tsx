@@ -146,18 +146,22 @@ export function ReportGenerator() {
       // Check against available data range
       if (previewData?.data?.data_availability) {
         const availability = previewData.data.data_availability;
-        
+
         if (availability.earliest_date && availability.latest_date) {
           const earliestAvailable = new Date(availability.earliest_date);
           const latestAvailable = new Date(availability.latest_date);
-          
+
           if (startDate < earliestAvailable) {
-            setErrors([`Data początkowa nie może być wcześniejsza niż ${earliestAvailable.toLocaleDateString('pl-PL')}`]);
+            setErrors([
+              `Data początkowa nie może być wcześniejsza niż ${earliestAvailable.toLocaleDateString('pl-PL')}`,
+            ]);
             return;
           }
-          
+
           if (endDate > latestAvailable) {
-            setErrors([`Data końcowa nie może być późniejsza niż ${latestAvailable.toLocaleDateString('pl-PL')}`]);
+            setErrors([
+              `Data końcowa nie może być późniejsza niż ${latestAvailable.toLocaleDateString('pl-PL')}`,
+            ]);
             return;
           }
         }
@@ -287,8 +291,13 @@ export function ReportGenerator() {
                 type="date"
                 {...register('start_date')}
                 className="bg-gray-800 border-gray-600"
-                min={previewData?.data?.data_availability?.earliest_date || undefined}
-                max={previewData?.data?.data_availability?.latest_date || undefined}
+                min={
+                  previewData?.data?.data_availability?.earliest_date ||
+                  undefined
+                }
+                max={
+                  previewData?.data?.data_availability?.latest_date || undefined
+                }
               />
               {formErrors.start_date && (
                 <p className="text-sm text-red-400">
@@ -305,8 +314,13 @@ export function ReportGenerator() {
                 type="date"
                 {...register('end_date')}
                 className="bg-gray-800 border-gray-600"
-                min={previewData?.data?.data_availability?.earliest_date || undefined}
-                max={previewData?.data?.data_availability?.latest_date || undefined}
+                min={
+                  previewData?.data?.data_availability?.earliest_date ||
+                  undefined
+                }
+                max={
+                  previewData?.data?.data_availability?.latest_date || undefined
+                }
               />
               {formErrors.end_date && (
                 <p className="text-sm text-red-400">
@@ -315,22 +329,6 @@ export function ReportGenerator() {
               )}
             </div>
           </div>
-
-          {/* Date Range Info */}
-          {previewData?.data?.data_availability?.earliest_date && previewData?.data?.data_availability?.latest_date && (
-            <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="h-4 w-4 text-blue-400" />
-                <span className="text-sm font-medium text-blue-300">Dostępny zakres dat</span>
-              </div>
-              <p className="text-sm text-blue-200">
-                Dane dostępne od{' '}
-                <strong>{new Date(previewData.data.data_availability.earliest_date).toLocaleDateString('pl-PL')}</strong>
-                {' '}do{' '}
-                <strong>{new Date(previewData.data.data_availability.latest_date).toLocaleDateString('pl-PL')}</strong>
-              </p>
-            </div>
-          )}
 
           {/* PAUTO Configuration */}
           <div className="space-y-4">
@@ -400,15 +398,24 @@ export function ReportGenerator() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {previewData.data.data_availability.has_consumption_data ? (
+              {previewData.data.data_availability.consumption_profiles_count ===
+              168 ? (
                 <CheckCircle className="h-5 w-5 text-green-400" />
+              ) : previewData.data.data_availability
+                  .consumption_profiles_count > 0 ? (
+                <AlertCircle className="h-5 w-5 text-amber-400" />
               ) : (
                 <AlertCircle className="h-5 w-5 text-red-400" />
               )}
               <span className="text-sm text-gray-300">
                 Profile zużycia:{' '}
                 {previewData.data.data_availability.consumption_profiles_count}{' '}
-                rekordów
+                {previewData.data.data_availability
+                  .consumption_profiles_count === 168 ? (
+                  <span>rekordów (kompletny)</span>
+                ) : (
+                  <span>/ 168 rekordów (niekompletny)</span>
+                )}
               </span>
             </div>
             {previewData.data.data_availability.latest_date && (
@@ -416,7 +423,9 @@ export function ReportGenerator() {
                 <CheckCircle className="h-5 w-5 text-blue-400" />
                 <span className="text-sm text-gray-300">
                   Ostatnie dane:{' '}
-                  {new Date(previewData.data.data_availability.latest_date).toLocaleDateString('pl-PL')}
+                  {new Date(
+                    previewData.data.data_availability.latest_date
+                  ).toLocaleDateString('pl-PL')}
                 </span>
               </div>
             )}
