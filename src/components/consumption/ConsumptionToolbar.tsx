@@ -1,26 +1,39 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Copy, Clipboard, FileDown, FileUp, RotateCcw, Lightbulb } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  copyDayPattern, 
-  fillHourPattern, 
-  generateDefaultWeekdayPattern, 
+import { useState } from 'react';
+import {
+  Copy,
+  Clipboard,
+  FileDown,
+  FileUp,
+  RotateCcw,
+  Lightbulb,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  copyDayPattern,
+  fillHourPattern,
+  generateDefaultWeekdayPattern,
   DAYS_OF_WEEK,
   calculateWeeklyTotal,
-  formatConsumption
-} from '@/lib/utils/consumption'
-import type { ConsumptionGridData } from '@/lib/utils/consumption'
+  formatConsumption,
+} from '@/lib/utils/consumption';
+import type { ConsumptionGridData } from '@/lib/utils/consumption';
 
 interface ConsumptionToolbarProps {
-  gridData: ConsumptionGridData
-  onDataChange: (gridData: ConsumptionGridData) => void
-  onSave: () => void
-  isSaving: boolean
-  hasUnsavedChanges: boolean
+  gridData: ConsumptionGridData;
+  onDataChange: (gridData: ConsumptionGridData) => void;
+  onSave: () => void;
+  isSaving: boolean;
+  hasUnsavedChanges: boolean;
 }
 
 export function ConsumptionToolbar({
@@ -28,84 +41,90 @@ export function ConsumptionToolbar({
   onDataChange,
   onSave,
   isSaving,
-  hasUnsavedChanges
+  hasUnsavedChanges,
 }: ConsumptionToolbarProps) {
-  const [copySourceDay, setCopySourceDay] = useState<string>('')
-  const [copyTargetDay, setCopyTargetDay] = useState<string>('')
-  const [fillHour, setFillHour] = useState<string>('')
-  const [fillValue, setFillValue] = useState<string>('')
+  const [copySourceDay, setCopySourceDay] = useState<string>('');
+  const [copyTargetDay, setCopyTargetDay] = useState<string>('');
+  const [fillHour, setFillHour] = useState<string>('');
+  const [fillValue, setFillValue] = useState<string>('');
 
-  const weeklyTotal = calculateWeeklyTotal(gridData)
+  const weeklyTotal = calculateWeeklyTotal(gridData);
 
   const handleCopyDay = () => {
     if (copySourceDay && copyTargetDay) {
-      const sourceDay = parseInt(copySourceDay)
-      const targetDay = parseInt(copyTargetDay)
-      const newData = copyDayPattern(gridData, sourceDay, targetDay)
-      onDataChange(newData)
+      const sourceDay = parseInt(copySourceDay);
+      const targetDay = parseInt(copyTargetDay);
+      const newData = copyDayPattern(gridData, sourceDay, targetDay);
+      onDataChange(newData);
     }
-  }
+  };
 
   const handleFillHour = () => {
     if (fillHour && fillValue) {
-      const hour = parseInt(fillHour)
-      const value = parseFloat(fillValue)
+      const hour = parseInt(fillHour);
+      const value = parseFloat(fillValue);
       if (!isNaN(value) && value >= 0) {
-        const newData = fillHourPattern(gridData, hour, value)
-        onDataChange(newData)
+        const newData = fillHourPattern(gridData, hour, value);
+        onDataChange(newData);
       }
     }
-  }
+  };
 
   const handleLoadDefaultPattern = () => {
-    const defaultPattern = generateDefaultWeekdayPattern()
-    onDataChange(defaultPattern)
-  }
+    const defaultPattern = generateDefaultWeekdayPattern();
+    onDataChange(defaultPattern);
+  };
 
   const handleClearAll = () => {
-    if (confirm('Czy na pewno chcesz wyczyścić wszystkie dane? Ta operacja nie może być cofnięta.')) {
-      const emptyData: ConsumptionGridData = {}
+    if (
+      confirm(
+        'Czy na pewno chcesz wyczyścić wszystkie dane? Ta operacja nie może być cofnięta.'
+      )
+    ) {
+      const emptyData: ConsumptionGridData = {};
       for (let day = 0; day <= 6; day++) {
         for (let hour = 0; hour <= 23; hour++) {
-          emptyData[`${day}_${hour}`] = 0
+          emptyData[`${day}_${hour}`] = 0;
         }
       }
-      onDataChange(emptyData)
+      onDataChange(emptyData);
     }
-  }
+  };
 
   const handleExportCSV = () => {
-    const csvContent = 'data:text/csv;charset=utf-8,'
-      + 'Dzień,Godzina,Zużycie (kWh)\n'
-      + Object.entries(gridData)
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      'Dzień,Godzina,Zużycie (kWh)\n' +
+      Object.entries(gridData)
         .map(([key, value]) => {
-          const [day, hour] = key.split('_')
-          return `${DAYS_OF_WEEK[parseInt(day)]},${hour}:00,${value}`
+          const [day, hour] = key.split('_');
+          return `${DAYS_OF_WEEK[parseInt(day)]},${hour}:00,${value}`;
         })
-        .join('\n')
+        .join('\n');
 
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement('a')
-    link.setAttribute('href', encodedUri)
-    link.setAttribute('download', 'wzorzec_zuzycia.csv')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'wzorzec_zuzycia.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="bg-gray-900 rounded-lg p-6 space-y-6">
       {/* Summary and Save */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <div className="text-lg font-semibold text-gray-100">
-            Narzędzia edycji wzorca
-          </div>
+          <div className="text-lg font-semibold text-gray-100">Narzędzia</div>
           <div className="text-sm text-gray-400">
-            Tygodniowe zużycie: <span className="font-mono text-gray-300">{formatConsumption(weeklyTotal)}</span>
+            Tygodniowe zużycie:{' '}
+            <span className="font-mono text-gray-300">
+              {formatConsumption(weeklyTotal)}
+            </span>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <Button
             onClick={onSave}
@@ -146,11 +165,7 @@ export function ConsumptionToolbar({
           Eksportuj CSV
         </Button>
 
-        <Button
-          variant="outline"
-          className="flex items-center gap-2"
-          disabled
-        >
+        <Button variant="outline" className="flex items-center gap-2" disabled>
           <FileUp className="h-4 w-4" />
           Importuj CSV
         </Button>
@@ -158,7 +173,9 @@ export function ConsumptionToolbar({
 
       {/* Copy Day Pattern */}
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-gray-300">Kopiuj wzorzec dnia</h4>
+        <h4 className="text-sm font-medium text-gray-300">
+          Kopiuj wzorzec dnia
+        </h4>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-400">Z:</span>
@@ -207,7 +224,9 @@ export function ConsumptionToolbar({
 
       {/* Fill Hour Pattern */}
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-gray-300">Wypełnij godzinę we wszystkie dni</h4>
+        <h4 className="text-sm font-medium text-gray-300">
+          Wypełnij godzinę we wszystkie dni
+        </h4>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-400">Godzina:</span>
@@ -257,12 +276,15 @@ export function ConsumptionToolbar({
       <div className="bg-gray-800 rounded-lg p-4">
         <h4 className="text-sm font-medium text-gray-300 mb-2">Wskazówki:</h4>
         <ul className="text-xs text-gray-400 space-y-1">
-          <li>• Kliknij komórkę aby edytować wartość zużycia dla konkretnej godziny</li>
+          <li>
+            • Kliknij komórkę aby edytować wartość zużycia dla konkretnej
+            godziny
+          </li>
           <li>• Użyj wzorca domyślnego jako punktu startowego</li>
           <li>• Kopiuj wzorce między dniami aby przyspieszyć konfigurację</li>
           <li>• Kolory komórek odzwierciedlają intensywność zużycia energii</li>
         </ul>
       </div>
     </div>
-  )
+  );
 }

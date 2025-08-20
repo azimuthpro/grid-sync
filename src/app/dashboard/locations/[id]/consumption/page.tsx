@@ -1,48 +1,54 @@
-'use client'
+'use client';
 
-import { useParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { ArrowLeft, MapPin, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ConsumptionProfileEditor } from '@/components/consumption/ConsumptionProfileEditor'
-import { useLocation } from '@/hooks/useLocations'
-import { useConsumptionProfile } from '@/hooks/useConsumptionProfile'
-import { getErrorMessage } from '@/lib/utils'
-import type { ConsumptionProfile } from '@/types'
+import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { ArrowLeft, MapPin, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ConsumptionProfileEditor } from '@/components/consumption/ConsumptionProfileEditor';
+import { useLocation } from '@/hooks/useLocations';
+import { useConsumptionProfile } from '@/hooks/useConsumptionProfile';
+import { getErrorMessage } from '@/lib/utils';
+import type { ConsumptionProfile } from '@/types';
 
 export default function ConsumptionProfilePage() {
-  const params = useParams()
-  const router = useRouter()
-  const locationId = params.id as string
-  
-  const { data: location, error: locationError, isLoading: locationLoading } = useLocation(locationId)
-  const { 
-    data: profiles, 
-    error: profilesError, 
-    isLoading: profilesLoading,
-    updateProfiles
-  } = useConsumptionProfile(locationId)
-  
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const params = useParams();
+  const router = useRouter();
+  const locationId = params.id as string;
 
-  const handleSave = async (newProfiles: Omit<ConsumptionProfile, 'id' | 'created_at' | 'updated_at'>[]) => {
-    setIsSaving(true)
-    setSaveError(null)
+  const {
+    data: location,
+    error: locationError,
+    isLoading: locationLoading,
+  } = useLocation(locationId);
+  const {
+    data: profiles,
+    error: profilesError,
+    isLoading: profilesLoading,
+    updateProfiles,
+  } = useConsumptionProfile(locationId);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const handleSave = async (
+    newProfiles: Omit<ConsumptionProfile, 'id' | 'created_at' | 'updated_at'>[]
+  ) => {
+    setIsSaving(true);
+    setSaveError(null);
 
     try {
-      await updateProfiles(newProfiles)
+      await updateProfiles(newProfiles);
       // Success feedback could be added here (e.g., toast notification)
     } catch (error) {
-      setSaveError(getErrorMessage(error))
+      setSaveError(getErrorMessage(error));
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleBack = () => {
-    router.push('/dashboard/locations')
-  }
+    router.push('/dashboard/locations');
+  };
 
   if (locationLoading || profilesLoading) {
     return (
@@ -58,7 +64,7 @@ export default function ConsumptionProfilePage() {
           <div className="h-96 bg-gray-700 rounded-lg"></div>
         </div>
       </div>
-    )
+    );
   }
 
   if (locationError) {
@@ -69,16 +75,12 @@ export default function ConsumptionProfilePage() {
             Błąd ładowania lokalizacji
           </h3>
           <p className="text-red-300">{getErrorMessage(locationError)}</p>
-          <Button 
-            onClick={handleBack} 
-            variant="outline" 
-            className="mt-4"
-          >
+          <Button onClick={handleBack} variant="outline" className="mt-4">
             Powrót do listy lokalizacji
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   if (!location) {
@@ -91,16 +93,12 @@ export default function ConsumptionProfilePage() {
           <p className="text-gray-400">
             Lokalizacja o podanym ID nie istnieje lub nie masz do niej dostępu.
           </p>
-          <Button 
-            onClick={handleBack} 
-            variant="outline" 
-            className="mt-4"
-          >
+          <Button onClick={handleBack} variant="outline" className="mt-4">
             Powrót do listy lokalizacji
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -111,29 +109,16 @@ export default function ConsumptionProfilePage() {
           onClick={handleBack}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-none"
         >
           <ArrowLeft className="h-4 w-4" />
           Powrót
         </Button>
-        
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-950/50 rounded-lg ring-1 ring-blue-500/20">
-            <Zap className="h-6 w-6 text-blue-500" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-100">
-              Profil zużycia energii
-            </h1>
-            <div className="flex items-center gap-2 text-gray-400">
-              <MapPin className="h-4 w-4" />
-              <span>{location.name}</span>
-              <span>•</span>
-              <span>{location.city}</span>
-              <span>•</span>
-              <span>{location.pv_power_kwp} kWp</span>
-            </div>
-          </div>
+
+        <div className="flex items-center ">
+          <h1 className="text-2xl font-bold text-gray-100">
+            Profil zużycia energii
+          </h1>
         </div>
       </div>
 
@@ -156,5 +141,5 @@ export default function ConsumptionProfilePage() {
         isSaving={isSaving}
       />
     </div>
-  )
+  );
 }

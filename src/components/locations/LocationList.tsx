@@ -1,13 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  MapPin,
-  Edit,
-  Trash2,
-  Plus,
-  Zap,
-} from 'lucide-react';
+import { MapPin, Trash2, Plus, Zap, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -107,7 +101,7 @@ export function LocationList({ locations }: LocationListProps) {
 
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200">
+              <Button className="bg-blue-600 hover:bg-blue-900 text-white transition-all duration-200">
                 <Plus className="h-4 w-4 mr-2" />
                 Dodaj lokalizację
               </Button>
@@ -148,7 +142,7 @@ export function LocationList({ locations }: LocationListProps) {
 
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200">
+            <Button className="bg-blue-600 hover:bg-blue-00 text-white shadow-md hover:shadow-lg transition-all duration-200">
               <Plus className="h-4 w-4 mr-2" />
               Dodaj lokalizację
             </Button>
@@ -214,11 +208,10 @@ export function LocationList({ locations }: LocationListProps) {
                     }
                     disabled={isLoading}
                     title="Zarządzaj profilem zużycia energii"
-                    className="bg-blue-900 border-blue-700 text-blue-300 hover:bg-blue-800 hover:border-blue-600 transition-all duration-200"
+                    className="bg-gray-800 border-none text-white hover:bg-blue-700 transition-all duration-200"
                   >
-                    <Zap className="h-4 w-4" />
+                    <Zap className="h-4 w-4 mr-2" /> Profil zużycia energii
                   </Button>
-
                   <Dialog
                     open={editingLocation?.id === location.id}
                     onOpenChange={(open) => {
@@ -231,9 +224,9 @@ export function LocationList({ locations }: LocationListProps) {
                         size="sm"
                         onClick={() => setEditingLocation(location)}
                         disabled={isLoading}
-                        className="bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500 transition-all duration-200"
+                        className="bg-gray-800 border-none text-white hover:bg-blue-700 transition-all duration-200"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-md">
@@ -261,7 +254,7 @@ export function LocationList({ locations }: LocationListProps) {
                     size="sm"
                     onClick={() => handleDeleteLocation(location)}
                     disabled={isLoading}
-                    className="bg-red-900 border-red-700 text-red-300 hover:bg-red-800 hover:border-red-600 transition-all duration-200"
+                    className="bg-gray-800 border-none text-white hover:bg-red-900 transition-all duration-200"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
