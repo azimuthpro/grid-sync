@@ -1,49 +1,68 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronDown, ChevronRight, Info } from 'lucide-react'
-import { createLocationSchema } from '@/lib/schemas'
-import type { CreateLocationSchema } from '@/lib/schemas'
-import { POLISH_CITIES_WITH_PROVINCES, getCityDisplayName, SYSTEM_LOSSES } from '@/types'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ChevronDown, ChevronRight, Info } from 'lucide-react';
+import { createLocationSchema } from '@/lib/schemas';
+import type { CreateLocationSchema } from '@/lib/schemas';
+import {
+  POLISH_CITIES_WITH_PROVINCES,
+  getCityDisplayName,
+  SYSTEM_LOSSES,
+} from '@/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface LocationFormProps {
-  onSubmit: (data: CreateLocationSchema) => Promise<void>
-  onCancel: () => void
-  initialData?: Partial<CreateLocationSchema>
-  isLoading?: boolean
+  onSubmit: (data: CreateLocationSchema) => Promise<void>;
+  onCancel: () => void;
+  initialData?: Partial<CreateLocationSchema>;
+  isLoading?: boolean;
 }
 
-export function LocationForm({ onSubmit, onCancel, initialData, isLoading = false }: LocationFormProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  
+export function LocationForm({
+  onSubmit,
+  onCancel,
+  initialData,
+  isLoading = false,
+}: LocationFormProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    formState: { errors }
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(createLocationSchema),
     defaultValues: {
       name: initialData?.name || '',
       city: initialData?.city || '',
       pv_power_kwp: initialData?.pv_power_kwp || 0,
-      system_losses: initialData?.system_losses ?? Math.round(SYSTEM_LOSSES * 100),
-      user_id: initialData?.user_id || ''
-    }
-  })
+      system_losses:
+        initialData?.system_losses ?? Math.round(SYSTEM_LOSSES * 100),
+      user_id: initialData?.user_id || '',
+    },
+  });
 
-  const selectedCity = watch('city')
+  const selectedCity = watch('city');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+        <label
+          htmlFor="name"
+          className="block text-sm font-medium text-gray-300"
+        >
           Nazwa lokalizacji
         </label>
         <Input
@@ -58,7 +77,10 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
       </div>
 
       <div>
-        <label htmlFor="city" className="block text-sm font-medium text-gray-300">
+        <label
+          htmlFor="city"
+          className="block text-sm font-medium text-gray-300"
+        >
           Miasto / Województwo
         </label>
         <Select
@@ -82,7 +104,10 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
       </div>
 
       <div>
-        <label htmlFor="pv_power_kwp" className="block text-sm font-medium text-gray-300">
+        <label
+          htmlFor="pv_power_kwp"
+          className="block text-sm font-medium text-gray-300"
+        >
           Moc instalacji (kWp - kilowatt peak)
         </label>
         <Input
@@ -91,12 +116,14 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
           type="number"
           step="0.1"
           min="0"
-          max="100"
+          max="1000"
           placeholder="np. 6.5"
           className="mt-1"
         />
         {errors.pv_power_kwp && (
-          <p className="text-red-400 text-sm mt-1">{errors.pv_power_kwp.message}</p>
+          <p className="text-red-400 text-sm mt-1">
+            {errors.pv_power_kwp.message}
+          </p>
         )}
       </div>
 
@@ -118,21 +145,27 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
         {showAdvanced && (
           <div className="mt-4 space-y-4">
             <div>
-              <label htmlFor="system_losses" className="block text-sm font-medium text-gray-300">
+              <label
+                htmlFor="system_losses"
+                className="block text-sm font-medium text-gray-300"
+              >
                 <div className="flex items-center gap-2">
                   Sprawność systemu (%)
                   <div className="group relative">
                     <Info className="h-4 w-4 text-gray-500 hover:text-gray-300 cursor-help" />
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-gray-200 text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-64 z-10">
-                      Współczynnik sprawności systemu uwzględniający straty w falowniku, okablowaniu, zabrudzeniu paneli, cieniowaniu itp. Domyślnie: {Math.round(SYSTEM_LOSSES * 100)}%
+                      Współczynnik sprawności systemu uwzględniający straty w
+                      falowniku, okablowaniu, zabrudzeniu paneli, cieniowaniu
+                      itp. Domyślnie: {Math.round(SYSTEM_LOSSES * 100)}%
                     </div>
                   </div>
                 </div>
               </label>
               <Input
-                {...register('system_losses', { 
+                {...register('system_losses', {
                   valueAsNumber: true,
-                  setValueAs: (value) => value === '' ? undefined : Number(value)
+                  setValueAs: (value) =>
+                    value === '' ? undefined : Number(value),
                 })}
                 id="system_losses"
                 type="number"
@@ -143,10 +176,13 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
                 className="mt-1"
               />
               {errors.system_losses && (
-                <p className="text-red-400 text-sm mt-1">{errors.system_losses.message}</p>
+                <p className="text-red-400 text-sm mt-1">
+                  {errors.system_losses.message}
+                </p>
               )}
               <p className="text-gray-500 text-xs mt-1">
-                Pozostaw puste aby użyć domyślnej wartości ({Math.round(SYSTEM_LOSSES * 100)}%)
+                Pozostaw puste aby użyć domyślnej wartości (
+                {Math.round(SYSTEM_LOSSES * 100)}%)
               </p>
             </div>
           </div>
@@ -162,13 +198,10 @@ export function LocationForm({ onSubmit, onCancel, initialData, isLoading = fals
         >
           Anuluj
         </Button>
-        <Button
-          type="submit"
-          disabled={isLoading}
-        >
+        <Button type="submit" disabled={isLoading}>
           {isLoading ? 'Zapisywanie...' : 'Zapisz lokalizację'}
         </Button>
       </div>
     </form>
-  )
+  );
 }

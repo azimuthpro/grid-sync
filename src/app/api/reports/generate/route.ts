@@ -27,8 +27,6 @@ const generateReportSchema = z.object({
   mwe_code: z.string().min(1, 'Kod MWE jest wymagany'),
   start_date: z.string().datetime(),
   end_date: z.string().datetime(),
-  include_pauto: z.boolean().default(false),
-  auto_generation_rate: z.number().min(0).max(1).default(0.8),
 });
 
 function getSupabaseUrl() {
@@ -170,26 +168,8 @@ export async function POST(request: NextRequest) {
         consumptionProfiles as ConsumptionProfile[]
       );
 
-      // Calculate PAUTO if requested
-      let pauto: number | undefined;
-      if (validatedData.include_pauto) {
-        pauto = calculatePAUTO(
-          pplan,
-          consumption,
-          validatedData.auto_generation_rate
-        );
-      }
-
-      // Log some sample entries for debugging
-      if (index < 5 || index >= hourlyDateTimes.length - 5) {
-        const localDate = new Date(
-          dateTime.getTime() - dateTime.getTimezoneOffset() * 60000
-        );
-        const dateStr = localDate.toISOString().split('T')[0];
-        console.log(
-          `Sample entry ${index}: ${dateStr} ${hour}:00 -> PPLAN: ${pplan}, Consumption: ${consumption}`
-        );
-      }
+      // Always calculate PAUTO as consumption value
+      const pauto = calculatePAUTO(pplan, consumption);
 
       return {
         datetime: formatMWEDateTime(dateTime),
@@ -208,7 +188,6 @@ export async function POST(request: NextRequest) {
         mwe_code: validatedData.mwe_code,
         start_date: startDate,
         end_date: endDate,
-        include_pauto: validatedData.include_pauto,
       },
     };
 
@@ -248,7 +227,6 @@ export async function POST(request: NextRequest) {
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           total_hours: mweData.length,
-          include_pauto: validatedData.include_pauto,
           validation_warnings: validation.warnings,
         },
       },

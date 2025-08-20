@@ -353,7 +353,6 @@ export interface MWEReportConfig {
   mwe_code: string;
   start_date: Date;
   end_date: Date;
-  include_pauto: boolean;
 }
 
 export interface MWEHourlyData {

@@ -52,8 +52,8 @@ export function formatMWEDateTime(date: Date): string {
  */
 export function generateMWEHeader(mweCode: string): string[] {
   return [
-    `#KOD_MWE,${mweCode}`,
-    'DATA I CZAS OD,PPLAN,PAUTO'
+    `#KOD_MWE;${mweCode}`,
+    'DATA I CZAS OD;PPLAN;PAUTO'
   ]
 }
 
@@ -66,7 +66,7 @@ export function generateMWEDataLines(data: MWEHourlyData[]): string[] {
     if (item.pauto !== undefined) {
       parts.push(formatMWEValue(item.pauto))
     }
-    return parts.join(',')
+    return parts.join(';')
   })
 }
 
@@ -145,17 +145,15 @@ export function calculatePPLAN(
 }
 
 /**
- * Calculate PAUTO value from consumption patterns
+ * Calculate PAUTO value from production and consumption
+ * PAUTO represents auto-generation (surplus energy after consumption)
  */
 export function calculatePAUTO(
   pplan: number,
-  consumption: number,
-  autoGenerationRate: number = 0.8
+  consumption: number
 ): number {
-  // PAUTO should be <= PPLAN and consider consumption patterns
-  // Use auto-generation rate to determine how much of planned production is automatic
-  const autoValue = Math.min(pplan * autoGenerationRate, pplan - Math.max(0, consumption - pplan))
-  return Math.max(0, autoValue)
+  // PAUTO = PPLAN - consumption, minimum 0 (no negative values)
+  return Math.max(0, pplan - consumption)
 }
 
 /**

@@ -34,8 +34,6 @@ const reportFormSchema = z.object({
     .max(50, 'Kod MWE nie może przekraczać 50 znaków'),
   start_date: z.string().min(1, 'Data początkowa jest wymagana'),
   end_date: z.string().min(1, 'Data końcowa jest wymagana'),
-  include_pauto: z.boolean(),
-  auto_generation_rate: z.number().min(0).max(1),
 });
 
 type ReportFormData = z.infer<typeof reportFormSchema>;
@@ -52,7 +50,6 @@ interface ReportGenerationResponse {
       start_date: string;
       end_date: string;
       total_hours: number;
-      include_pauto: boolean;
       validation_warnings: string[];
     };
   };
@@ -96,14 +93,9 @@ export function ReportGenerator() {
     formState: { errors: formErrors },
   } = useForm<ReportFormData>({
     resolver: zodResolver(reportFormSchema),
-    defaultValues: {
-      include_pauto: false,
-      auto_generation_rate: 0.8,
-    },
   });
 
   const selectedLocationId = watch('location_id');
-  const includePauto = watch('include_pauto');
 
   // Locations are automatically loaded by the useLocations hook
 
@@ -330,42 +322,6 @@ export function ReportGenerator() {
             </div>
           </div>
 
-          {/* PAUTO Configuration */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                {...register('include_pauto')}
-                id="include_pauto"
-                className="rounded bg-gray-800 border-gray-600"
-              />
-              <label
-                htmlFor="include_pauto"
-                className="text-sm font-medium text-gray-300"
-              >
-                Uwzględnij wartości PAUTO (autogeneracja)
-              </label>
-            </div>
-
-            {includePauto && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300">
-                  Współczynnik autogeneracji (0-1)
-                </label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="1"
-                  {...register('auto_generation_rate', { valueAsNumber: true })}
-                  className="bg-gray-800 border-gray-600 w-32"
-                />
-                <p className="text-xs text-gray-400">
-                  Określa jaką część planowanej produkcji stanowi autogeneracja
-                </p>
-              </div>
-            )}
-          </div>
 
           <Button
             type="submit"
@@ -521,9 +477,7 @@ export function ReportGenerator() {
                 {generatedReport.data.metadata.mwe_code}
               </div>
               <div className="text-sm text-gray-300">
-                {generatedReport.data.metadata.include_pauto
-                  ? 'Z PAUTO'
-                  : 'Tylko PPLAN'}
+                Z PAUTO (zużycie)
               </div>
             </div>
           </div>
@@ -568,15 +522,6 @@ export function ReportGenerator() {
             <div>
               <strong>Ustaw zakres dat</strong> - Maksymalnie 31 dni, nie więcej
               niż 30 dni w przyszłość
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">
-              4
-            </div>
-            <div>
-              <strong>Opcjonalnie włącz PAUTO</strong> - Jeśli instalacja ma
-              włączoną autogenerację
             </div>
           </div>
         </div>
