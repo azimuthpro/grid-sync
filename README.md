@@ -148,6 +148,24 @@ src/
 
 ## Version History
 
+### v0.2.0 (August 20, 2025)
+
+**Enhanced MWE Report System and Code Management**
+
+**Major Features:**
+- **MWE code field with auto-populate** - New MWE code field for locations with automatic population in report generation, enhancing report tracking and identification
+- **Simplified MWE report generation** - Streamlined report generation process with improved efficiency and cleaner code architecture
+
+**User Experience Improvements:**
+- **Automated report identification** - MWE codes are automatically included in generated reports for better tracking and organization
+- **Enhanced location management** - New MWE code field provides better identification and organization of energy installations
+- **Simplified report workflow** - More efficient report generation process with reduced complexity
+
+**Technical Enhancements:**
+- **Refactored report system** - Simplified and optimized MWE report generation codebase for better maintainability
+- **Enhanced location schema** - Extended location data model to support MWE code tracking
+- **Code organization improvements** - Better structured report generation logic with improved readability
+
 ### v0.1.7 (August 19, 2025)
 
 **Enhanced Reporting and Analytics Integration**

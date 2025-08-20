@@ -21,7 +21,7 @@ export default function SettingsPage() {
           <p className="text-gray-400 mb-6">Ta funkcjonalność jest w trakcie implementacji</p>
           <div className="text-center mt-6">
             <p className="text-sm text-gray-400">
-              Aplikacja w wersji: 0.1.7
+              Aplikacja w wersji: 0.2.0
             </p>
           </div>
         </div>
