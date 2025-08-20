@@ -248,6 +248,7 @@ export function LocationList({ locations }: LocationListProps) {
                           city: location.city,
                           pv_power_kwp: location.pv_power_kwp,
                           system_losses: location.system_losses,
+                          mwe_code: location.mwe_code,
                           user_id: location.user_id,
                         }}
                         isLoading={isLoading}

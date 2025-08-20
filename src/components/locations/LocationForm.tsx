@@ -50,6 +50,7 @@ export function LocationForm({
       pv_power_kwp: initialData?.pv_power_kwp || 0,
       system_losses:
         initialData?.system_losses ?? Math.round(SYSTEM_LOSSES * 100),
+      mwe_code: initialData?.mwe_code || '',
       user_id: initialData?.user_id || '',
     },
   });
@@ -183,6 +184,29 @@ export function LocationForm({
               <p className="text-gray-500 text-xs mt-1">
                 Pozostaw puste aby użyć domyślnej wartości (
                 {Math.round(SYSTEM_LOSSES * 100)}%)
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="mwe_code"
+                className="block text-sm font-medium text-gray-300"
+              >
+                Kod MWE (opcjonalnie)
+              </label>
+              <Input
+                {...register('mwe_code')}
+                id="mwe_code"
+                placeholder="np. MWE_0984657_46T0001"
+                className="mt-1"
+              />
+              {errors.mwe_code && (
+                <p className="text-red-400 text-sm mt-1">
+                  {errors.mwe_code.message}
+                </p>
+              )}
+              <p className="text-gray-500 text-xs mt-1">
+                Kod jednostki wytwórczej zgodny z rejestrem URE. Jeśli podany, będzie używany jako domyślny w raportach.
               </p>
             </div>
           </div>

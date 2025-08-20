@@ -33,6 +33,12 @@ export const locationSchema = z.object({
         .max(100, 'Sprawność systemu nie może być większa niż 100%')
     )
     .optional(),
+  mwe_code: z
+    .string()
+    .max(100, 'Kod MWE nie może być dłuższy niż 100 znaków')
+    .optional()
+    .or(z.literal(''))
+    .transform(value => value === '' ? undefined : value),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

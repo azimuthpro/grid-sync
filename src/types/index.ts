@@ -8,6 +8,7 @@ export interface UserLocation {
   city: string;
   pv_power_kwp: number;
   system_losses?: number; // Custom system efficiency factor (0-1), null means use default
+  mwe_code?: string; // Optional MWE code (Kod MWE) from URE registry
   created_at: string;
   updated_at: string;
 }

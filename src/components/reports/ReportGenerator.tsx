@@ -31,7 +31,7 @@ const reportFormSchema = z.object({
   mwe_code: z
     .string()
     .min(1, 'Kod MWE jest wymagany')
-    .max(50, 'Kod MWE nie może przekraczać 50 znaków'),
+    .max(100, 'Kod MWE nie może przekraczać 100 znaków'),
   start_date: z.string().min(1, 'Data początkowa jest wymagana'),
   end_date: z.string().min(1, 'Data końcowa jest wymagana'),
 });
@@ -96,8 +96,16 @@ export function ReportGenerator() {
   });
 
   const selectedLocationId = watch('location_id');
+  const selectedLocation = locations.find(
+    (loc) => loc.id === selectedLocationId
+  );
 
-  // Locations are automatically loaded by the useLocations hook
+  // Auto-populate MWE code when location is selected
+  useEffect(() => {
+    if (selectedLocation?.mwe_code) {
+      setValue('mwe_code', selectedLocation.mwe_code);
+    }
+  }, [selectedLocation, setValue]);
 
   // Fetch preview data when location is selected
   useEffect(() => {
@@ -263,7 +271,6 @@ export function ReportGenerator() {
                 {...register('mwe_code')}
                 placeholder="np. MWE_0984657_46T0001"
                 className="bg-gray-800 border-gray-600"
-                value="MWE_0984657_46T0001"
               />
               {formErrors.mwe_code && (
                 <p className="text-sm text-red-400">
@@ -321,7 +328,6 @@ export function ReportGenerator() {
               )}
             </div>
           </div>
-
 
           <Button
             type="submit"
@@ -476,9 +482,7 @@ export function ReportGenerator() {
               <div className="text-lg font-semibold text-gray-100">
                 {generatedReport.data.metadata.mwe_code}
               </div>
-              <div className="text-sm text-gray-300">
-                Z PAUTO (zużycie)
-              </div>
+              <div className="text-sm text-gray-300">Z PAUTO (zużycie)</div>
             </div>
           </div>
 
