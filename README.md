@@ -148,6 +148,28 @@ src/
 
 ## Version History
 
+### v0.2.1 (August 21, 2025)
+
+**UI/UX Improvements and Report Formatting Enhancements**
+
+**Major Improvements:**
+- **Streamlined report configuration** - Compact 4-column form layout with improved data availability indicators and better visual hierarchy
+- **Smart defaults and automation** - Auto-selection of first location and intelligent date range setting (last 2 days) for faster report generation
+- **Enhanced MWE report formatting** - Polish decimal notation (3 decimal places with comma separator) and proper kW to MW unit conversion
+- **Dark theme enhancements** - Improved date picker calendar icon styling for better visibility in dark mode
+
+**User Experience Enhancements:**
+- **Simplified report workflow** - Streamlined configuration form with auto-populated fields and intelligent defaults
+- **Better visual feedback** - Repositioned generate button and improved data availability status indicators
+- **Cleaner number formatting** - Removed trailing zeros from all formatted numbers for better readability
+- **Improved report accuracy** - Enhanced MWE report validation with proper unit conversion and formatting standards
+
+**Technical Improvements:**
+- **UI component optimization** - Better layout structure and positioning for improved user experience
+- **Number formatting utilities** - Enhanced formatting functions with trailing zero removal across all utilities
+- **Report validation enhancements** - Updated MWE report validation with proper MW conversion limits
+- **CSS improvements** - Dark theme support for form elements and better cross-browser compatibility
+
 ### v0.2.0 (August 20, 2025)
 
 **Enhanced MWE Report System and Code Management**
