@@ -16,14 +16,23 @@ import { calculatePVProduction } from './pv-production'
  * Format number value according to MWE specifications
  * Uses Polish decimal notation (comma separator)
  */
-export function formatMWEValue(value: number): string {
-  if (value === 0) return '0,0'
+export function formatMWEValue(value: number, convertKWtoMW: boolean = false): string {
+  let processedValue = value
+  
+  // Convert kW to MW if requested
+  if (convertKWtoMW) {
+    processedValue = value / 1000
+  }
+  
+  if (processedValue === 0) return '0,000'
   
   // Round to 3 decimal places max
-  const rounded = Math.round(value * 1000) / 1000
+  const rounded = Math.round(processedValue * 1000) / 1000
   
-  // Convert to Polish decimal format
-  return rounded.toString().replace('.', ',')
+  // Convert to Polish decimal format with 3 decimal places
+  const formatted = rounded.toFixed(3).replace('.', ',')
+  
+  return formatted
 }
 
 /**
@@ -62,9 +71,9 @@ export function generateMWEHeader(mweCode: string): string[] {
  */
 export function generateMWEDataLines(data: MWEHourlyData[]): string[] {
   return data.map(item => {
-    const parts = [item.datetime, formatMWEValue(item.pplan)]
+    const parts = [item.datetime, formatMWEValue(item.pplan, true)]
     if (item.pauto !== undefined) {
-      parts.push(formatMWEValue(item.pauto))
+      parts.push(formatMWEValue(item.pauto, true))
     }
     return parts.join(';')
   })
@@ -249,23 +258,29 @@ export function validateMWEReport(reportData: MWEReportData): MWEValidationResul
       errors.push(`Data przekracza limit 30 dni w przyszłość w wierszu ${index + 3}: ${item.datetime}`)
     }
     
-    // Validate PPLAN value
+    // Validate PPLAN value (convert kW to MW for validation)
+    const pplanMW = item.pplan / 1000
     if (item.pplan < 0) {
       errors.push(`PPLAN musi być >= 0 w wierszu ${index + 3}`)
     }
     
-    if (item.pplan > 9999.999) {
-      errors.push(`PPLAN przekracza maksymalną wartość 9999,999 w wierszu ${index + 3}`)
+    if (pplanMW > 9.999) {
+      errors.push(`PPLAN przekracza maksymalną wartość 9,999 MW w wierszu ${index + 3}`)
     }
     
     // Validate PAUTO value if present
     if (item.pauto !== undefined) {
+      const pautoMW = item.pauto / 1000
       if (item.pauto < 0) {
         errors.push(`PAUTO musi być >= 0 w wierszu ${index + 3}`)
       }
       
       if (item.pauto > item.pplan) {
         errors.push(`PAUTO musi być <= PPLAN w wierszu ${index + 3}`)
+      }
+      
+      if (pautoMW > 9.999) {
+        errors.push(`PAUTO przekracza maksymalną wartość 9,999 MW w wierszu ${index + 3}`)
       }
     }
   })

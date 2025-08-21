@@ -55,3 +55,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Style date input calendar icon for dark theme - comprehensive approach */
+input[type="date"].bg-gray-800::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(0.9);
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+/* Additional specificity for Tailwind classes */
+.bg-gray-800[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(0.9);
+  opacity: 0.8;
+}
+
+/* Hover state for better UX */
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Firefox and cross-browser support */
+input[type="date"] {
+  color-scheme: dark;
+}

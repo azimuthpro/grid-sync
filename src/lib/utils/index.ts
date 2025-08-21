@@ -103,17 +103,22 @@ export function parseGridKey(key: string): { day: number; hour: number } | null 
   return { day, hour }
 }
 
-// Number formatting
+// Number formatting helper
+function formatNumberWithoutTrailingZeros(value: number, decimals: number = 1): string {
+  const fixed = value.toFixed(decimals)
+  return parseFloat(fixed).toString()
+}
+
 export function formatEnergy(kwh: number, decimals: number = 2): string {
-  return `${kwh.toFixed(decimals)} kWh`
+  return `${formatNumberWithoutTrailingZeros(kwh, decimals)} kWh`
 }
 
 export function formatPower(kwp: number, decimals: number = 1): string {
-  return `${kwp.toFixed(decimals)} kWp`
+  return `${formatNumberWithoutTrailingZeros(kwp, decimals)} kWp`
 }
 
 export function formatPercentage(value: number, decimals: number = 1): string {
-  return `${value.toFixed(decimals)}%`
+  return `${formatNumberWithoutTrailingZeros(value, decimals)}%`
 }
 
 // Array utilities

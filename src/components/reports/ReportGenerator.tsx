@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useLocations } from '@/hooks/useLocations';
 import { createCSVDownloadUrl, downloadFile } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { UserLocation } from '@/types';
 
@@ -84,6 +84,9 @@ export function ReportGenerator() {
     useState<ReportGenerationResponse | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
+  const [hasAutoSelected, setHasAutoSelected] = useState({
+    dates: false,
+  });
 
   const {
     register,
@@ -93,6 +96,9 @@ export function ReportGenerator() {
     formState: { errors: formErrors },
   } = useForm<ReportFormData>({
     resolver: zodResolver(reportFormSchema),
+    defaultValues: {
+      location_id: locations.length > 0 ? locations[0].id : '',
+    },
   });
 
   const selectedLocationId = watch('location_id');
@@ -100,12 +106,47 @@ export function ReportGenerator() {
     (loc) => loc.id === selectedLocationId
   );
 
+  // Auto-select first location when locations are loaded
+  useEffect(() => {
+    if (locations.length > 0 && !selectedLocationId) {
+      setValue('location_id', locations[0].id);
+    }
+  }, [locations, selectedLocationId, setValue]);
+
   // Auto-populate MWE code when location is selected
   useEffect(() => {
     if (selectedLocation?.mwe_code) {
       setValue('mwe_code', selectedLocation.mwe_code);
     }
   }, [selectedLocation, setValue]);
+
+  // Auto-set date range to last two days when preview data is available
+  useEffect(() => {
+    if (
+      previewData?.data?.data_availability?.latest_date &&
+      !hasAutoSelected.dates
+    ) {
+      const latestDate = new Date(
+        previewData.data.data_availability.latest_date
+      );
+      const earliestDate = previewData.data.data_availability.earliest_date
+        ? new Date(previewData.data.data_availability.earliest_date)
+        : null;
+
+      // Set end date to latest available date
+      const endDate = latestDate;
+
+      // Set start date to 2 days before end date (or earliest available date if less data)
+      let startDate = subDays(latestDate, 1); // Last 2 days (today and yesterday)
+      if (earliestDate && startDate < earliestDate) {
+        startDate = earliestDate;
+      }
+
+      setValue('end_date', endDate.toISOString().split('T')[0]);
+      setValue('start_date', startDate.toISOString().split('T')[0]);
+      setHasAutoSelected((prev) => ({ ...prev, dates: true }));
+    }
+  }, [previewData, hasAutoSelected.dates, setValue]);
 
   // Fetch preview data when location is selected
   useEffect(() => {
@@ -213,17 +254,15 @@ export function ReportGenerator() {
   return (
     <div className="space-y-6">
       {/* Configuration Form */}
-      <div className="bg-gray-900 rounded-lg border border-gray-700 p-6">
+      <div className="bg-gray-900 rounded-lg  p-6">
         <div className="flex items-center gap-2 mb-6">
           <FileText className="h-5 w-5 text-blue-400" />
-          <h2 className="text-xl font-semibold text-gray-100">
-            Konfiguracja raportu
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-100">Konfiguracja</h2>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Location Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-300">
                 Lokalizacja
@@ -278,10 +317,7 @@ export function ReportGenerator() {
                 </p>
               )}
             </div>
-          </div>
 
-          {/* Date Range */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-300">
                 Data początkowa
@@ -329,75 +365,74 @@ export function ReportGenerator() {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            disabled={isGenerating || !selectedLocationId}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            {isGenerating ? 'Generowanie...' : 'Generuj raport'}
-          </Button>
+          {/* Data Availability Preview */}
+          {previewData?.data && (
+            <div className="flex flex-row gap-8">
+              <div>
+                <Button
+                  type="submit"
+                  disabled={isGenerating || !selectedLocationId}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {isGenerating ? 'Generowanie...' : 'Generuj raport'}
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                {previewData.data.data_availability.has_insolation_data ? (
+                  <CheckCircle className="h-5 w-5 text-green-400" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-red-400" />
+                )}
+                <span className="text-sm text-gray-300">
+                  Dane nasłonecznienia:{' '}
+                  {previewData.data.data_availability.has_insolation_data
+                    ? 'Dostępne'
+                    : 'Brak danych'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {previewData.data.data_availability
+                  .consumption_profiles_count === 168 ? (
+                  <CheckCircle className="h-5 w-5 text-green-400" />
+                ) : previewData.data.data_availability
+                    .consumption_profiles_count > 0 ? (
+                  <AlertCircle className="h-5 w-5 text-amber-400" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-red-400" />
+                )}
+                <span className="text-sm text-gray-300">
+                  Profile zużycia:{' '}
+                  {
+                    previewData.data.data_availability
+                      .consumption_profiles_count
+                  }{' '}
+                  {previewData.data.data_availability
+                    .consumption_profiles_count === 168 ? (
+                    <span>rekordów (kompletny)</span>
+                  ) : (
+                    <span>/ 168 rekordów (niekompletny)</span>
+                  )}
+                </span>
+              </div>
+              {previewData.data.data_availability.latest_date && (
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-blue-400" />
+                  <span className="text-sm text-gray-300">
+                    Ostatnie dane:{' '}
+                    {new Date(
+                      previewData.data.data_availability.latest_date
+                    ).toLocaleDateString('pl-PL')}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </form>
       </div>
 
-      {/* Data Availability Preview */}
-      {previewData?.data && (
-        <div className="bg-gray-900 rounded-lg border border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-100 mb-4">
-            Dostępność danych
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="flex items-center gap-2">
-              {previewData.data.data_availability.has_insolation_data ? (
-                <CheckCircle className="h-5 w-5 text-green-400" />
-              ) : (
-                <AlertCircle className="h-5 w-5 text-red-400" />
-              )}
-              <span className="text-sm text-gray-300">
-                Dane nasłonecznienia:{' '}
-                {previewData.data.data_availability.has_insolation_data
-                  ? 'Dostępne'
-                  : 'Brak danych'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {previewData.data.data_availability.consumption_profiles_count ===
-              168 ? (
-                <CheckCircle className="h-5 w-5 text-green-400" />
-              ) : previewData.data.data_availability
-                  .consumption_profiles_count > 0 ? (
-                <AlertCircle className="h-5 w-5 text-amber-400" />
-              ) : (
-                <AlertCircle className="h-5 w-5 text-red-400" />
-              )}
-              <span className="text-sm text-gray-300">
-                Profile zużycia:{' '}
-                {previewData.data.data_availability.consumption_profiles_count}{' '}
-                {previewData.data.data_availability
-                  .consumption_profiles_count === 168 ? (
-                  <span>rekordów (kompletny)</span>
-                ) : (
-                  <span>/ 168 rekordów (niekompletny)</span>
-                )}
-              </span>
-            </div>
-            {previewData.data.data_availability.latest_date && (
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-blue-400" />
-                <span className="text-sm text-gray-300">
-                  Ostatnie dane:{' '}
-                  {new Date(
-                    previewData.data.data_availability.latest_date
-                  ).toLocaleDateString('pl-PL')}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Errors and Warnings */}
       {errors.length > 0 && (
-        <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
+        <div className="bg-red-900/20 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="h-5 w-5 text-red-400" />
             <h3 className="text-lg font-semibold text-red-300">Błędy</h3>
@@ -413,7 +448,7 @@ export function ReportGenerator() {
       )}
 
       {warnings.length > 0 && (
-        <div className="bg-amber-900/20 border border-amber-700 rounded-lg p-4">
+        <div className="bg-amber-900/20 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="h-5 w-5 text-amber-400" />
             <h3 className="text-lg font-semibold text-amber-300">
@@ -432,18 +467,11 @@ export function ReportGenerator() {
 
       {/* Generated Report */}
       {generatedReport?.data && (
-        <div className="bg-gray-900 rounded-lg border border-gray-700 p-6">
+        <div className="bg-gray-900 rounded-lg  p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-100">
               Wygenerowany raport
             </h3>
-            <Button
-              onClick={downloadReport}
-              className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Pobierz CSV
-            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
@@ -464,7 +492,7 @@ export function ReportGenerator() {
                   new Date(generatedReport.data.metadata.start_date),
                   'dd.MM.yyyy',
                   { locale: pl }
-                )}{' '}
+                )}
                 -
                 {format(
                   new Date(generatedReport.data.metadata.end_date),
@@ -492,44 +520,17 @@ export function ReportGenerator() {
               {generatedReport.data.filename}
             </div>
           </div>
+          <div className="mt-4">
+            <Button
+              onClick={downloadReport}
+              className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Pobierz CSV
+            </Button>
+          </div>
         </div>
       )}
-
-      {/* Instructions */}
-      <div className="bg-gray-900 rounded-lg border border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-100 mb-4">
-          Instrukcja użycia
-        </h3>
-        <div className="space-y-3 text-sm text-gray-300">
-          <div className="flex items-start gap-2">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">
-              1
-            </div>
-            <div>
-              <strong>Wybierz lokalizację</strong> - Wybierz instalację PV, dla
-              której chcesz wygenerować raport
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">
-              2
-            </div>
-            <div>
-              <strong>Wprowadź kod MWE</strong> - Kod jednostki wytwórczej
-              zgodny z rejestrem URE
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">
-              3
-            </div>
-            <div>
-              <strong>Ustaw zakres dat</strong> - Maksymalnie 31 dni, nie więcej
-              niż 30 dni w przyszłość
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

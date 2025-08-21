@@ -98,10 +98,13 @@ export function formatProduction(productionKw: number, unit: 'kW' | 'kWh' = 'kW'
   }
 
   if (productionKw >= 1000) {
-    return `${(productionKw / 1000).toFixed(1)} MW${unit === 'kWh' ? 'h' : ''}`
+    const mwValue = productionKw / 1000
+    const formatted = parseFloat(mwValue.toFixed(1)).toString()
+    return `${formatted} MW${unit === 'kWh' ? 'h' : ''}`
   }
 
-  return `${productionKw.toFixed(1)} ${unit}`
+  const formatted = parseFloat(productionKw.toFixed(1)).toString()
+  return `${formatted} ${unit}`
 }
 
 /**
