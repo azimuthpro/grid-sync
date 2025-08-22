@@ -44,7 +44,7 @@ This command implements semantic versioning for the GridSync project.
 
 6. **Review commit titles** to accurately summarize all changes in documentation
 
-7. After updating the version, documentation, and UI, commit all changes using the "commit" instructions.
+7. After updating the version, documentation, and UI, commit all changes.
 
 ## Semantic Versioning Decision Criteria
 

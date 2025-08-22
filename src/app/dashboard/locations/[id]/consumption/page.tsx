@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { ArrowLeft, MapPin, Zap } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConsumptionProfileEditor } from '@/components/consumption/ConsumptionProfileEditor';
 import { useLocation } from '@/hooks/useLocations';
@@ -134,7 +134,6 @@ export default function ConsumptionProfilePage() {
       {/* Main content */}
       <ConsumptionProfileEditor
         locationId={locationId}
-        locationName={location.name}
         initialProfiles={profiles || []}
         onSave={handleSave}
         isLoading={profilesLoading}

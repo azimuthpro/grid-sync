@@ -40,20 +40,20 @@ export function formatMWEValue(value: number, convertKWtoMW: boolean = false): s
  * Handles DST transitions with 'A' suffix
  */
 export function formatMWEDateTime(date: Date): string {
-  const localDate = toZonedTime(date, APP_TIMEZONE)
+  // Use the date directly - it's already in the correct local time
+  // No need to apply timezone conversion as the dates are created in local context
   
   // Check for DST transition (spring forward)
   const nextHour = addHours(date, 1)
-  const localNextHour = toZonedTime(nextHour, APP_TIMEZONE)
   
   // If hour difference is not 1, we're in DST transition
-  const hourDiff = localNextHour.getHours() - localDate.getHours()
+  const hourDiff = nextHour.getHours() - date.getHours()
   const isDSTTransition = hourDiff !== 1 && hourDiff !== -23
   
-  const formatted = format(localDate, 'dd-MM-yyyy HH:mm')
+  const formatted = format(date, 'dd-MM-yyyy HH:mm')
   
   // Add 'A' suffix for summer time during DST transition
-  return isDSTTransition && localDate.getHours() === 2 ? `${formatted}A` : formatted
+  return isDSTTransition && date.getHours() === 2 ? `${formatted}A` : formatted
 }
 
 /**
@@ -99,8 +99,8 @@ export function calculatePPLAN(
   hour: number,
   insolationData: InsolationData[]
 ): number {
-  // Convert to local date string without timezone issues
-  const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
+  // Use toZonedTime to get the correct local date in APP_TIMEZONE
+  const localDate = toZonedTime(date, APP_TIMEZONE)
   const dateStr = localDate.toISOString().split('T')[0] // yyyy-mm-dd format
   
   // First try exact match

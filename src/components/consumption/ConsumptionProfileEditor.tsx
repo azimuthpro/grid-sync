@@ -12,7 +12,6 @@ import type { ConsumptionProfile } from '@/types';
 
 interface ConsumptionProfileEditorProps {
   locationId: string;
-  locationName: string;
   initialProfiles?: ConsumptionProfile[];
   onSave: (
     profiles: Omit<ConsumptionProfile, 'id' | 'created_at' | 'updated_at'>[]
@@ -23,7 +22,6 @@ interface ConsumptionProfileEditorProps {
 
 export function ConsumptionProfileEditor({
   locationId,
-  locationName,
   initialProfiles = [],
   onSave,
   isLoading = false,

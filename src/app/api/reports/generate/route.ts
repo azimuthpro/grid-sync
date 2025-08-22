@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     const hourlyDateTimes = generateHourlyDateTimeRange(startDate, endDate);
 
     // Generate MWE hourly data
-    const mweData: MWEHourlyData[] = hourlyDateTimes.map((dateTime, index) => {
+    const mweData: MWEHourlyData[] = hourlyDateTimes.map((dateTime) => {
       const hour = dateTime.getHours();
 
       // Calculate PPLAN from PV production
