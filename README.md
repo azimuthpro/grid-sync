@@ -148,6 +148,20 @@ src/
 
 ## Version History
 
+### v0.2.2 (August 22, 2025)
+
+**Timezone Fix for MWE Reports**
+
+**Critical Bug Fix:**
+- **Resolved timezone shift in MWE reports** - Fixed 1-hour timezone offset issue where generated reports showed hours 7:00-20:00 instead of the correct database range 6:00-19:00
+- **Enhanced timezone handling** - Improved `formatMWEDateTime` function to properly handle local timezone without double conversion
+- **Updated date processing** - Fixed `calculatePPLAN` function to use proper timezone conversion with `toZonedTime` for accurate database queries
+
+**Technical Improvements:**
+- **Corrected datetime formatting** - Removed redundant timezone conversion that was causing hour shifts in report generation
+- **Improved date matching** - Enhanced insolation data matching with proper timezone-aware date string formatting
+- **Code cleanup** - Removed unused variables and improved code quality
+
 ### v0.2.1 (August 21, 2025)
 
 **UI/UX Improvements and Report Formatting Enhancements**
