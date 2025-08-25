@@ -59,7 +59,7 @@ Use `/help` to see all available commands.
 
 ## Recent Updates
 
-### v0.2.0 (Current) - Enhanced MWE Report System
+### v0.3.0 (Current) - Polish Localization and Landing Page
 
 **API Routes**: `/api/insolation` (CRUD + CRON auth + aggregation functions), `/api/locations/[id]/consumption` (batch updates), `/api/chat` (AI), `/api/locations` (RLS)
 

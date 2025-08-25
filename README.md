@@ -148,6 +148,26 @@ src/
 
 ## Version History
 
+### v0.3.0 (August 25, 2025)
+
+**Polish Localization and Landing Page**
+
+**Major Features:**
+- **Complete Polish localization** - Converted all app metadata, UI text, and content to Polish language for native user experience
+- **Comprehensive landing page** - Added full-featured homepage with pricing, features showcase, and user onboarding flow
+- **Pricing structure** - Added transparent pricing with monthly (90 PLN) and annual (900 PLN) plans, including 2-month discount for yearly subscriptions
+
+**User Experience Improvements:**
+- **Native language support** - Full Polish translation including metadata, OpenGraph tags, and UI elements
+- **Landing page navigation** - Professional homepage with clear value proposition and call-to-action buttons
+- **Pricing transparency** - Detailed pricing information with VAT notice and savings calculation for annual plans
+
+**Technical Enhancements:**
+- **HTML language attribute** - Updated to 'pl' for proper browser and screen reader support
+- **Enhanced date range handling** - Updated report generation to default to 3-day periods for better data analysis
+- **Improved MWE validation** - Removed past date warnings that were causing confusion in report validation
+- **Optimized CRON scheduling** - Adjusted insolation data fetch to 8:45 AM for better server resource utilization
+
 ### v0.2.2 (August 22, 2025)
 
 **Timezone Fix for MWE Reports**
