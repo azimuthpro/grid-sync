@@ -120,7 +120,7 @@ export function ReportGenerator() {
     }
   }, [selectedLocation, setValue]);
 
-  // Auto-set date range to last two days when preview data is available
+  // Auto-set date range to last 3 days when preview data is available
   useEffect(() => {
     if (
       previewData?.data?.data_availability?.latest_date &&
@@ -136,8 +136,10 @@ export function ReportGenerator() {
       // Set end date to latest available date
       const endDate = latestDate;
 
-      // Set start date to 2 days before end date (or earliest available date if less data)
-      let startDate = subDays(latestDate, 1); // Last 2 days (today and yesterday)
+      // Set start date to 2 days before latest available date (3-day range total)
+      let startDate = subDays(latestDate, 2);
+
+      // If start date is before earliest available date, use earliest date
       if (earliestDate && startDate < earliestDate) {
         startDate = earliestDate;
       }

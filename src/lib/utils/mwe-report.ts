@@ -248,10 +248,6 @@ export function validateMWEReport(reportData: MWEReportData): MWEValidationResul
     const [, day, month, year, hour, minute] = dateMatch
     const itemDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute))
     
-    // Check if date is in the past
-    if (isBefore(itemDate, now)) {
-      warnings.push(`Data z przeszłości w wierszu ${index + 3}: ${item.datetime}`)
-    }
     
     // Check if date is too far in the future
     if (isAfter(itemDate, futureLimit)) {
