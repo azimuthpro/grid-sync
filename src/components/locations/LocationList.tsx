@@ -101,7 +101,7 @@ export function LocationList({ locations }: LocationListProps) {
 
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-900 text-white transition-all duration-200">
+              <Button className="bg-blue-600  text-white ">
                 <Plus className="h-4 w-4 mr-2" />
                 Dodaj lokalizację
               </Button>
@@ -185,7 +185,7 @@ export function LocationList({ locations }: LocationListProps) {
                           location.system_losses !==
                             Math.round(SYSTEM_LOSSES * 100) && (
                             <div className="flex items-center gap-2">
-                              <span className="text-xs px-2 py-1 bg-amber-900 text-amber-300 border border-amber-700 rounded-full">
+                              <span className="text-xs px-2 py-1 bg-amber-900 text-amber-300 rounded-full">
                                 Niestandardowa sprawność:{' '}
                                 {location.system_losses}%
                               </span>

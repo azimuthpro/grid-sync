@@ -168,6 +168,29 @@ export const registerSchema = z
     path: ['confirmPassword'],
   });
 
+export const passwordChangeSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(1, 'Aktualne hasło jest wymagane'),
+    newPassword: z
+      .string()
+      .min(6, 'Nowe hasło musi mieć co najmniej 6 znaków')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Hasło musi zawierać co najmniej jedną małą literę, jedną wielką literę i jedną cyfrę'
+      ),
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: 'Nowe hasła nie są identyczne',
+    path: ['confirmNewPassword'],
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: 'Nowe hasło musi być różne od aktualnego',
+    path: ['newPassword'],
+  });
+
 // Chat message schema for AI assistant
 export const chatMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -217,6 +240,7 @@ export type CreateInsolationDataSchema = z.infer<
 export type ReportGenerationSchema = z.infer<typeof reportGenerationSchema>;
 export type LoginSchema = z.infer<typeof loginSchema>;
 export type RegisterSchema = z.infer<typeof registerSchema>;
+export type PasswordChangeSchema = z.infer<typeof passwordChangeSchema>;
 export type ChatMessageSchema = z.infer<typeof chatMessageSchema>;
 export type ChatRequestSchema = z.infer<typeof chatRequestSchema>;
 export type PolishCities = z.infer<typeof polishCitiesSchema>;
