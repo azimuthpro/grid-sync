@@ -148,6 +148,29 @@ src/
 
 ## Version History
 
+### v0.4.0 (August 29, 2025)
+
+**Code Quality and Settings Enhancement**
+
+**Major Features:**
+- **Password change functionality** - Added complete password management system in settings page with current password verification and secure password updates
+- **Enhanced settings interface** - Professional settings page with secure password change form, validation, and user feedback
+
+**Code Quality Improvements:**
+- **Standardized code formatting** - Comprehensive formatting standardization with consistent double quotes, semicolons, and code structure across all components
+- **Improved component consistency** - Unified formatting patterns in dashboard components for better maintainability
+- **Enhanced form handling** - Better password visibility toggles and validation feedback in settings forms
+
+**User Experience Enhancements:**
+- **Security-focused design** - Secure password change workflow with current password verification and confirmation
+- **Better visual feedback** - Enhanced error and success messaging in settings interface
+- **Professional UI styling** - Improved button styling and form layout for better user experience
+
+**Technical Improvements:**
+- **Type-safe form validation** - Enhanced password change schema with proper validation rules
+- **Secure authentication flow** - Current password verification before allowing password updates
+- **Code consistency** - Standardized formatting patterns across all TypeScript and React components
+
 ### v0.3.0 (August 25, 2025)
 
 **Polish Localization and Landing Page**
