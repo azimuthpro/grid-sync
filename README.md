@@ -148,6 +148,25 @@ src/
 
 ## Version History
 
+### v0.5.0 (October 2, 2025)
+
+**Manual Insolation Data Management**
+
+**Major Features:**
+- **Manual data fetch endpoint** - New API endpoint for on-demand insolation data retrieval with comprehensive error handling
+- **UI data fetch button** - Added interactive button in insolation dashboard for manual data synchronization
+- **Enhanced data control** - Users can now trigger insolation data updates manually in addition to automated CRON jobs
+
+**User Experience Improvements:**
+- **On-demand data updates** - Manual refresh capability for insolation data without waiting for scheduled updates
+- **Better data control** - Direct user control over data synchronization timing
+- **Improved feedback** - Real-time status updates when fetching insolation data manually
+
+**Technical Enhancements:**
+- **Extended API functionality** - New manual fetch endpoint with proper authentication and validation
+- **UI integration** - Seamless integration of manual fetch button in insolation dashboard interface
+- **Error handling** - Comprehensive error handling for manual data fetch operations
+
 ### v0.4.0 (August 29, 2025)
 
 **Code Quality and Settings Enhancement**
