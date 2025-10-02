@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { RefreshCw, Sun } from 'lucide-react';
+import { RefreshCw, Sun, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InsolationFilters } from '@/components/insolation/InsolationFilters';
 import { InsolationChart } from '@/components/insolation/InsolationChart';
@@ -35,6 +35,7 @@ export default function InsolationPage() {
     InsolationData[]
   >([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const shouldResetData = useRef(false);
 
   // Get latest date from database
@@ -192,6 +193,31 @@ export default function InsolationPage() {
     mutateChart();
   };
 
+  const handleFetchData = async () => {
+    setIsFetching(true);
+    try {
+      const response = await fetch('/api/insolation/fetch', {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Błąd podczas pobierania danych');
+      }
+
+      // Refresh data after successful fetch
+      handleRefresh();
+
+      // Optionally show success message
+      console.log('Dane zostały pobrane pomyślnie:', data);
+    } catch (error) {
+      console.error('Błąd podczas pobierania danych:', error);
+      alert(error instanceof Error ? error.message : 'Wystąpił błąd podczas pobierania danych');
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
   // Create a stable chart key to prevent unnecessary remounts
   const chartKey = useMemo(() => {
     const filterKey = JSON.stringify(filters);
@@ -213,6 +239,18 @@ export default function InsolationPage() {
           </div>
 
           <div className="flex items-center space-x-3">
+            <Button
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={handleFetchData}
+              disabled={isFetching || isLoading}
+            >
+              {isFetching ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              {isFetching ? 'Pobieranie...' : 'Pobierz dane'}
+            </Button>
             <Button
               className="bg-blue-600  text-white "
               onClick={handleRefresh}
