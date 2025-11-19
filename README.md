@@ -124,16 +124,16 @@ Stores solar irradiation forecasts:
 
 ```
 src/
-├── app/                 # Next.js App Router
-│   ├── (auth)/         # Authentication routes
+├── app/              # Next.js App Router
+│   ├── (auth)/       # Authentication routes
 │   ├── dashboard/    # Protected dashboard routes
-│   └── api/            # API endpoints
-├── components/         # React components
-│   ├── ui/            # Basic UI components
-│   ├── locations/     # Location management
-│   ├── reports/       # Report generation
-│   └── ai-assistant/  # AI chat widget
-├── lib/               # Utility libraries
+│   └── api/          # API endpoints
+├── components/       # React components
+│   ├── ui/           # Basic UI components
+│   ├── locations/    # Location management
+│   ├── reports/      # Report generation
+│   └── ai-assistant/ # AI chat widget
+├── lib/              # Utility libraries
 │   ├── supabase/     # Supabase client & queries
 │   ├── schemas/      # Zod validation schemas
 │   └── utils/        # Helper functions
