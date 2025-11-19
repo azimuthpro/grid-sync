@@ -20,11 +20,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 src/
   app/
     (auth)/login,register     # Auth routes
-    dashboard/               # Protected routes: locations, reports, settings
-    api/chat,locations,insolation,cron  # API endpoints
-  components/ui,locations,reports,ai-assistant
-  lib/supabase,schemas,utils
-  types/
+    dashboard/               # Protected routes: locations, reports, settings, insolation
+    api/                     # API endpoints: locations, insolation, reports, production-summary, cron
+  components/
+    ui/                      # 4 basic UI components
+    locations/               # 3 location management components
+    reports/                 # 1 report generation component
+    consumption/             # 4 consumption profile components
+    dashboard/               # 1 dashboard widget component
+    insolation/              # 3 insolation data components
+    ai-assistant/            # Empty (reserved for future use)
+  lib/
+    supabase/                # 3 Supabase helpers (client, queries, service)
+    schemas/                 # Zod validation schemas
+    services/                # 3 services (gemini-vision, image-processor, insolation-data)
+    utils/                   # 5 utility files (consumption, cron-auth, index, mwe-report, pv-production)
+  types/                     # 1 type definition file
+  middleware.ts              # Route protection
 ```
 
 ## Database & Features
@@ -59,17 +71,36 @@ Use `/help` to see all available commands.
 
 ## Recent Updates
 
-### v0.3.0 (Current) - Polish Localization and Landing Page
+### v0.5.0 (Current) - Manual Insolation Data Management
 
-**API Routes**: `/api/insolation` (CRUD + CRON auth + aggregation functions), `/api/locations/[id]/consumption` (batch updates), `/api/chat` (AI), `/api/locations` (RLS)
+**Last Documentation Sync**: 2025-11-20 - Documentation updated to reflect actual codebase state
 
-**Key Components**: InsolationChart/Card/Overview, ConsumptionProfileEditor, AI assistant chat, enhanced MWE report generation system
+**API Routes**:
+- `/api/insolation` (CRUD + manual fetch + charts aggregation)
+- `/api/insolation/fetch` (manual data fetch)
+- `/api/insolation/charts` (chart data aggregation)
+- `/api/cron/fetch-insolation` (automated CRON updates with auth)
+- `/api/locations` (location CRUD with RLS)
+- `/api/locations/[id]` (single location operations)
+- `/api/locations/[id]/consumption` (consumption profile batch updates)
+- `/api/production-summary` (PV production calculations)
+- `/api/reports/generate` (MWE report generation)
 
-**Data Flow**: Auth → Dashboard (`/dashboard/insolation`, `/locations/[id]/consumption`) → Location mgmt → Consumption profiling → CSV/MWE reports
+**Key Components**:
+- **Insolation**: InsolationChart, InsolationDataTable, InsolationFilters (3 components)
+- **Consumption**: ConsumptionProfileEditor, ConsumptionCell, ConsumptionToolbar, ConsumptionGrid (4 components)
+- **Locations**: LocationForm, LocationProductionCard, LocationList (3 components)
+- **Reports**: ReportGenerator (1 component)
+- **Dashboard**: ProductionSummaryWidget (1 component)
+- **UI**: dialog, button, select, input (4 components)
 
-**Utils**: `lib/utils/pv-production.ts` (energy calculations), `lib/utils/consumption.ts` (grid transformations)
+**Data Flow**: Auth (via middleware) → Dashboard → Location mgmt → Consumption profiling (`/dashboard/locations/[id]/consumption`) → Insolation monitoring (`/dashboard/insolation`) → CSV/MWE reports
 
-**Processing**: Automated insolation data pipeline with CRON integration, 168-point consumption profiles, real-time PV production calculations, streamlined MWE report generation
+**Services**: `gemini-vision.ts` (AI image processing), `image-processor.ts` (image handling), `insolation-data.ts` (data fetch operations)
+
+**Utils**: `pv-production.ts` (energy calculations), `consumption.ts` (grid transformations), `mwe-report.ts` (report generation), `cron-auth.ts` (CRON authentication)
+
+**Processing**: Manual + automated insolation data pipeline with CRON integration, 168-point consumption profiles, real-time PV production calculations, streamlined MWE report generation
 
 **MWE Integration**: Enhanced location schema with MWE code field, auto-populated reports with tracking codes, simplified report generation workflow
 

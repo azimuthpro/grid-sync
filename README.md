@@ -38,13 +38,18 @@ A desktop web application for prosumers (energy producers-consumers) that automa
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15 with TypeScript and Tailwind CSS
-- **Backend**: Supabase (PostgreSQL, Authentication, Edge Functions)
-- **AI Integration**: Vercel AI SDK with Google Gemini
-- **UI Components**: Radix UI with custom styling
-- **Forms**: React Hook Form with Zod validation
-- **Charts**: Recharts for data visualization
-- **CSV Export**: PapaParse for report generation
+- **Frontend**: Next.js 15.4.6 with React 19.1.0, TypeScript 5, and Tailwind CSS 4
+- **Backend**: Supabase 2.55.0 (PostgreSQL, Authentication with SSR 0.6.1)
+- **AI Integration**: Vercel AI SDK 5.0.12 with Google Gemini (@ai-sdk/google 2.0.6)
+- **UI Components**: Radix UI (Dialog, Dropdown Menu, Select, Tabs) with custom styling
+- **Forms**: React Hook Form 7.62.0 with Zod 4.0.17 validation via @hookform/resolvers 5.2.1
+- **State Management**: Zustand 5.0.7, SWR 2.3.6
+- **Charts**: Recharts 3.1.2 for data visualization
+- **CSV Export**: PapaParse 5.5.3 for report generation
+- **Date Handling**: date-fns 4.1.0 with date-fns-tz 3.2.0 for timezone support
+- **Icons**: lucide-react 0.539.0
+- **Analytics**: Vercel Analytics 1.5.0
+- **Dev Tools**: ESLint 9, Prettier 3.6.2, @t3-oss/env-nextjs 0.13.8
 
 ## Installation
 
@@ -74,7 +79,7 @@ GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
 4. Set up the database:
 
 - Create a new Supabase project
-- Run the database migrations (SQL files in `/database` folder)
+- Run the database migrations (6 SQL files in `supabase/migrations/` folder)
 - Configure Row Level Security policies
 
 5. Run the development server:
@@ -124,28 +129,52 @@ Stores solar irradiation forecasts:
 
 ```
 src/
-├── app/              # Next.js App Router
-│   ├── (auth)/       # Authentication routes
-│   ├── dashboard/    # Protected dashboard routes
-│   └── api/          # API endpoints
-├── components/       # React components
-│   ├── ui/           # Basic UI components
-│   ├── locations/    # Location management
-│   ├── reports/      # Report generation
-│   └── ai-assistant/ # AI chat widget
-├── lib/              # Utility libraries
-│   ├── supabase/     # Supabase client & queries
-│   ├── schemas/      # Zod validation schemas
-│   └── utils/        # Helper functions
-└── types/            # TypeScript definitions
+├── app/                      # Next.js App Router
+│   ├── (auth)/               # 2 authentication routes (login, register)
+│   │   ├── login/
+│   │   └── register/
+│   ├── dashboard/            # 7 protected dashboard routes
+│   │   ├── page.tsx          # Main dashboard
+│   │   ├── insolation/       # Insolation data visualization
+│   │   ├── locations/        # Location management + consumption profiling
+│   │   ├── reports/          # MWE report generation
+│   │   └── settings/         # User settings & password change
+│   ├── api/                  # 9 API endpoints
+│   │   ├── cron/             # Automated data fetch CRON job
+│   │   ├── insolation/       # Insolation data CRUD + charts + manual fetch
+│   │   ├── locations/        # Location CRUD + consumption profiles
+│   │   ├── production-summary/  # PV production calculations
+│   │   └── reports/          # MWE report generation
+│   ├── page.tsx              # Landing page
+│   └── layout.tsx
+├── components/               # React components (16 total)
+│   ├── ui/                   # 4 basic UI components (button, dialog, input, select)
+│   ├── locations/            # 3 location management components
+│   ├── reports/              # 1 report generation component
+│   ├── consumption/          # 4 consumption profile components
+│   ├── dashboard/            # 1 dashboard widget component
+│   ├── insolation/           # 3 insolation data components
+│   └── ai-assistant/         # Empty (reserved for future use)
+├── lib/                      # Utility libraries (12 files)
+│   ├── supabase/             # 3 Supabase helpers (client, queries, service)
+│   ├── schemas/              # Zod validation schemas
+│   ├── services/             # 3 services (gemini-vision, image-processor, insolation-data)
+│   ├── utils/                # 5 helper functions (consumption, cron-auth, mwe-report, pv-production, index)
+│   └── Env.mjs               # Environment variable validation
+├── types/                    # 1 TypeScript type definition file
+└── middleware.ts             # Route protection middleware
+supabase/
+└── migrations/               # 6 SQL migration files
 ```
 
 ### Available Scripts
 
-- `npm run dev` - Start development server with Turbopack
+- `npm run dev` - Start development server
 - `npm run build` - Build production application
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint checks
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
 
 ### Design Principles
 
