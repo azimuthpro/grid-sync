@@ -19,7 +19,7 @@ function isProtectedRoute(pathname: string): boolean {
          pathname === ROOT_PATH
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   
   const isPublic = isPublicRoute(pathname)
@@ -48,13 +48,13 @@ export async function middleware(request: NextRequest) {
     const { data: { user: authUser }, error } = await supabase.auth.getUser()
     
     if (error && error.message !== 'Auth session missing!' && isProtected) {
-      console.error('Middleware: Authentication error:', error)
+      console.error('Proxy: Authentication error:', error)
     }
     
     user = authUser
   } catch (error) {
     if (isProtected) {
-      console.error('Middleware: Authentication error:', error)
+      console.error('Proxy: Authentication error:', error)
     }
   }
 

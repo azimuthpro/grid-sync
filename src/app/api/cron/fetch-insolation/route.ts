@@ -5,9 +5,7 @@ import { GeminiVisionService } from '@/lib/services/gemini-vision'
 import { InsolationDataService } from '@/lib/services/insolation-data'
 import { CronAuthUtils } from '@/lib/utils/cron-auth'
 
-export const config = {
-  maxDuration: 300,
-}
+export const maxDuration = 300
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now()

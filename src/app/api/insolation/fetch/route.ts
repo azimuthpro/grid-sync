@@ -7,9 +7,7 @@ import { GeminiVisionService } from '@/lib/services/gemini-vision'
 import { InsolationDataService } from '@/lib/services/insolation-data'
 import { Env } from '@/lib/Env.mjs'
 
-export const config = {
-  maxDuration: 300,
-}
+export const maxDuration = 300
 
 function getSupabaseUrl() {
   const url = Env.NEXT_PUBLIC_SUPABASE_URL
