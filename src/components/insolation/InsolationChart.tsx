@@ -124,10 +124,10 @@ const InsolationChartComponent = function InsolationChart({
     label,
   }: {
     active?: boolean;
-    payload?: Array<{
+    payload?: readonly {
       payload: Record<string, string | number>;
       value: number;
-    }>;
+    }[];
     label?: string | number;
   }) => {
     if (active && payload && payload.length) {

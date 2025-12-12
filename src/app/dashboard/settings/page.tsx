@@ -238,7 +238,7 @@ export default function SettingsPage() {
           </h3>
           <p className="text-gray-400 text-sm">
             Wersja aplikacji:{' '}
-            <span className="text-blue-400 font-mono">1.0.0</span>
+            <span className="text-blue-400 font-mono">1.0.1</span>
           </p>
         </div>
       </div>

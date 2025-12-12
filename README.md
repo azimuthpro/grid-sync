@@ -194,6 +194,20 @@ supabase/
 
 ## Version History
 
+### v1.0.1 (December 12, 2025)
+
+**Type Safety Improvements**
+
+**Bug Fixes:**
+
+- **Enhanced TypeScript type safety** - Fixed readonly array type in InsolationChart tooltip payload for better type compatibility with Recharts
+- **Package synchronization** - Updated package-lock.json to match package.json version
+
+**Technical Improvements:**
+
+- **Type refinement** - Changed tooltip payload type from `Array<{...}>` to `readonly {...}[]` for improved type checking
+- **Better React 19.2 compatibility** - Enhanced type definitions for latest Recharts integration
+
 ### v1.0.0 (December 12, 2025)
 
 **Major Framework Upgrade - Next.js 16 and React 19.2**
