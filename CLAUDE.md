@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**GridSync** is a Next.js 15 desktop web application for prosumers that automates PV energy balance calculations and generates grid operator reports. Uses App Router, TypeScript, Tailwind CSS v4, Supabase backend, and Google Gemini AI integration.
+**GridSync** is a Next.js 16 desktop web application for prosumers that automates PV energy balance calculations and generates grid operator reports. Uses App Router, TypeScript, Tailwind CSS v4, Supabase backend, and Google Gemini AI integration.
 
 **Commands**: `npm run dev` | `npm run build` | `npm run lint`
 
 ## Architecture
 
-**Core Stack**: Next.js 15, Supabase (PostgreSQL/Auth), Vercel AI SDK + Google Gemini, Tailwind v4 + Radix UI
+**Core Stack**: Next.js 16, Supabase (PostgreSQL/Auth), Vercel AI SDK + Google Gemini, Tailwind v4 + Radix UI
 **Forms & Data**: React Hook Form + Zod 4 schemas, Zustand state, Recharts visualization, PapaParse CSV export
 **Config**: TypeScript strict mode, `@/*` path aliases, ESLint Next.js config, desktop-first (min 1024px)
 
@@ -36,13 +36,13 @@ src/
     services/                # 3 services (gemini-vision, image-processor, insolation-data)
     utils/                   # 5 utility files (consumption, cron-auth, index, mwe-report, pv-production)
   types/                     # 1 type definition file
-  middleware.ts              # Route protection
+  proxy.ts                   # Route protection (Next.js 16 middleware)
 ```
 
 ## Database & Features
 
 **Tables**: `user_locations` (PV installations), `consumption_profiles` (168-point weekly patterns), `insolation_data` (solar forecasts)
-**Auth**: Supabase Auth + RLS policies + middleware protection
+**Auth**: Supabase Auth + RLS policies + proxy protection (Next.js 16 middleware)
 
 **Key Features**: Multi-location PV management, consumption profiling, CSV report generation, AI optimization advice, interactive data visualization
 
@@ -71,9 +71,16 @@ Use `/help` to see all available commands.
 
 ## Recent Updates
 
-### v0.5.0 (Current) - Manual Insolation Data Management
+### v1.0.0 (Current) - Major Framework Upgrade
 
-**Last Documentation Sync**: 2025-11-20 - Documentation updated to reflect actual codebase state
+**Last Documentation Sync**: 2025-12-12 - Documentation updated to reflect Next.js 16 and React 19.2 upgrade
+
+**Breaking Changes**:
+- **Next.js 16 migration** - Upgraded from 15.4.6 to 16.0.10 with architectural changes
+- **React 19.2 upgrade** - Updated from 19.1.0 to 19.2.3
+- **Middleware renamed** - `middleware.ts` → `proxy.ts` per Next.js 16 convention
+- **Config model change** - Individual `maxDuration` exports instead of config objects
+- **Turbopack config** - Added `turbopack.root` for workspace detection
 
 **API Routes**:
 - `/api/insolation` (CRUD + manual fetch + charts aggregation)
@@ -94,7 +101,7 @@ Use `/help` to see all available commands.
 - **Dashboard**: ProductionSummaryWidget (1 component)
 - **UI**: dialog, button, select, input (4 components)
 
-**Data Flow**: Auth (via middleware) → Dashboard → Location mgmt → Consumption profiling (`/dashboard/locations/[id]/consumption`) → Insolation monitoring (`/dashboard/insolation`) → CSV/MWE reports
+**Data Flow**: Auth (via proxy.ts) → Dashboard → Location mgmt → Consumption profiling (`/dashboard/locations/[id]/consumption`) → Insolation monitoring (`/dashboard/insolation`) → CSV/MWE reports
 
 **Services**: `gemini-vision.ts` (AI image processing), `image-processor.ts` (image handling), `insolation-data.ts` (data fetch operations)
 

@@ -38,7 +38,7 @@ A desktop web application for prosumers (energy producers-consumers) that automa
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15.4.6 with React 19.1.0, TypeScript 5, and Tailwind CSS 4
+- **Frontend**: Next.js 16.0.10 with React 19.2.3, TypeScript 5, and Tailwind CSS 4
 - **Backend**: Supabase 2.55.0 (PostgreSQL, Authentication with SSR 0.6.1)
 - **AI Integration**: Vercel AI SDK 5.0.12 with Google Gemini (@ai-sdk/google 2.0.6)
 - **UI Components**: Radix UI (Dialog, Dropdown Menu, Select, Tabs) with custom styling
@@ -193,6 +193,31 @@ supabase/
 5. Open a Pull Request
 
 ## Version History
+
+### v1.0.0 (December 12, 2025)
+
+**Major Framework Upgrade - Next.js 16 and React 19.2**
+
+**Breaking Changes:**
+
+- **Next.js 16 migration** - Upgraded from Next.js 15.4.6 to 16.0.10 with breaking architectural changes
+- **React 19.2 upgrade** - Updated React and React DOM from 19.1.0 to 19.2.3
+- **Middleware convention change** - Renamed middleware.ts to proxy.ts per Next.js 16 requirements
+- **Configuration model update** - Replaced config object exports with individual maxDuration exports
+- **Workspace detection** - Added turbopack.root configuration to resolve workspace detection issues
+
+**Technical Improvements:**
+
+- **Enhanced framework stability** - Latest Next.js 16 conventions for improved performance and reliability
+- **Modern React features** - Updated to React 19.2 with latest performance optimizations
+- **Build configuration enhancements** - Improved turbopack configuration for better development experience
+- **Updated dependency tree** - Comprehensive dependency updates including package-lock.json synchronization
+
+**Migration Notes:**
+
+- Projects upgrading from v0.5.0 need to rename middleware.ts to proxy.ts
+- Configuration exports must be updated to use individual maxDuration exports instead of config objects
+- Verify turbopack workspace detection settings for proper development server operation
 
 ### v0.5.0 (October 2, 2025)
 
