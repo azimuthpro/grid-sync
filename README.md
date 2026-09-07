@@ -39,19 +39,25 @@ A desktop web application for prosumers (energy producers-consumers) that automa
 ## Tech Stack
 
 - **Frontend**: Next.js 16.0.10 with React 19.2.3, TypeScript 5, and Tailwind CSS 4
-- **Backend**: Supabase 2.55.0 (PostgreSQL, Authentication with SSR 0.6.1)
-- **AI Integration**: Vercel AI SDK 5.0.12 with Google Gemini (@ai-sdk/google 2.0.6)
+- **Backend**: Supabase 2.87.1 (PostgreSQL, Authentication with SSR 0.8.0)
+- **AI Integration**: Vercel AI SDK 6.0.39 with Google Gemini (@ai-sdk/google 3.0.10)
 - **UI Components**: Radix UI (Dialog, Dropdown Menu, Select, Tabs) with custom styling
-- **Forms**: React Hook Form 7.62.0 with Zod 4.0.17 validation via @hookform/resolvers 5.2.1
-- **State Management**: Zustand 5.0.7, SWR 2.3.6
-- **Charts**: Recharts 3.1.2 for data visualization
+- **Forms**: React Hook Form 7.68.0 with Zod 4.1.13 validation via @hookform/resolvers 5.2.1
+- **State Management**: Zustand 5.0.9, SWR 2.3.7
+- **Charts**: Recharts 3.5.1 for data visualization
 - **CSV Export**: PapaParse 5.5.3 for report generation
 - **Date Handling**: date-fns 4.1.0 with date-fns-tz 3.2.0 for timezone support
-- **Icons**: lucide-react 0.539.0
-- **Analytics**: Vercel Analytics 1.5.0
+- **Icons**: lucide-react 0.561.0
+- **Analytics**: Vercel Analytics 1.6.1
+- **Runtime & Package Manager**: Node.js 24.x with Bun 1.2
 - **Dev Tools**: ESLint 9, Prettier 3.6.2, @t3-oss/env-nextjs 0.13.8
 
 ## Installation
+
+### Prerequisites
+
+- **Node.js 24.x** (see `.nvmrc` — run `nvm use` to switch)
+- **Bun 1.2 or later** — used as the package manager ([install](https://bun.sh))
 
 1. Clone the repository:
 
@@ -63,7 +69,7 @@ cd grid-sync
 2. Install dependencies:
 
 ```bash
-npm install
+bun install
 ```
 
 3. Set up environment variables:
@@ -85,7 +91,7 @@ GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
 5. Run the development server:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -155,33 +161,36 @@ src/
 │   ├── dashboard/            # 1 dashboard widget component
 │   ├── insolation/           # 3 insolation data components
 │   └── ai-assistant/         # Empty (reserved for future use)
-├── lib/                      # Utility libraries (12 files)
+├── hooks/                    # 4 React data hooks (locations, insolation, consumption, supabase)
+├── lib/                      # Utility libraries (13 files)
 │   ├── supabase/             # 3 Supabase helpers (client, queries, service)
 │   ├── schemas/              # Zod validation schemas
 │   ├── services/             # 3 services (gemini-vision, image-processor, insolation-data)
 │   ├── utils/                # 5 helper functions (consumption, cron-auth, mwe-report, pv-production, index)
 │   └── Env.mjs               # Environment variable validation
 ├── types/                    # 1 TypeScript type definition file
-└── middleware.ts             # Route protection middleware
+└── proxy.ts                  # Route protection (Next.js 16 middleware convention)
 supabase/
-└── migrations/               # 6 SQL migration files
+├── migrations/               # 6 SQL migration files
+└── schema.sql                # Full database schema
 ```
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build production application
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint checks
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
+- `bun install` - Install dependencies
+- `bun run dev` - Start development server
+- `bun run build` - Build production application
+- `bun run start` - Start production server
+- `bun run lint` - Run ESLint checks
+- `bun run format` - Format code with Prettier
+- `bun run format:check` - Check code formatting
 
 ### Design Principles
 
 - **Desktop-First**: Optimized for desktop use (min-width: 1024px)
 - **Type Safety**: Comprehensive TypeScript coverage with Zod validation
 - **Security**: Row Level Security policies for data protection
-- **Performance**: Optimized with Next.js 15 and React 19
+- **Performance**: Optimized with Next.js 16 and React 19
 - **User Experience**: Intuitive interface with real-time feedback
 
 ## Contributing

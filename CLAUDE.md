@@ -6,12 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **GridSync** is a Next.js 16 desktop web application for prosumers that automates PV energy balance calculations and generates grid operator reports. Uses App Router, TypeScript, Tailwind CSS v4, Supabase backend, and Google Gemini AI integration.
 
-**Commands**: `npm run dev` | `npm run build` | `npm run lint`
+**Commands**: `bun install` | `bun run dev` | `bun run build` | `bun run lint`
 
 ## Architecture
 
 **Core Stack**: Next.js 16, Supabase (PostgreSQL/Auth), Vercel AI SDK + Google Gemini, Tailwind v4 + Radix UI
 **Forms & Data**: React Hook Form + Zod 4 schemas, Zustand state, Recharts visualization, PapaParse CSV export
+**Runtime**: Node.js 24.x (`.nvmrc`, `engines.node`), Bun 1.2 as package manager (`bun.lock`)
 **Config**: TypeScript strict mode, `@/*` path aliases, ESLint Next.js config, desktop-first (min 1024px)
 
 ## Project Structure
@@ -30,7 +31,9 @@ src/
     dashboard/               # 1 dashboard widget component
     insolation/              # 3 insolation data components
     ai-assistant/            # Empty (reserved for future use)
+  hooks/                     # 4 data hooks (useLocations, useInsolation, useConsumptionProfile, useSupabase)
   lib/
+    Env.mjs                  # Env var validation (@t3-oss/env-nextjs)
     supabase/                # 3 Supabase helpers (client, queries, service)
     schemas/                 # Zod validation schemas
     services/                # 3 services (gemini-vision, image-processor, insolation-data)
@@ -57,7 +60,7 @@ src/
 **Good**: `feat(dashboard): add energy balance charts`
 **Avoid**: "Fixed stuff", "WIP", "Various changes"
 
-**Pre-commit**: `git status/diff` → `npm run build/lint` → test → `git add . && git commit`
+**Pre-commit**: `git status/diff` → `bun run build/lint` → test → `git add . && git commit`
 **Clean commits**: No co-authored tags, generated signatures, or automated metadata
 
 ## Custom Commands
