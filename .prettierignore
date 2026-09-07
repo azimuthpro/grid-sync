@@ -6,7 +6,7 @@ build
 *.log
 .vercel
 .git
-package-lock.json
+bun.lock
 *.svg
 *.png
 *.jpg

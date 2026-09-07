@@ -2,6 +2,9 @@
   "name": "grid-sync",
   "version": "1.0.1",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "author": "Azimuth PRO <dev@azimuthpro.com>",
   "scripts": {
     "dev": "next dev",
@@ -42,7 +45,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -55,5 +58,9 @@
     "zod-to-json-schema": {
       "zod": "^4.0.17"
     }
-  }
+  },
+  "trustedDependencies": [
+    "@tailwindcss/oxide",
+    "unrs-resolver"
+  ]
 }
