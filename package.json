@@ -54,11 +54,6 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "overrides": {
-    "zod-to-json-schema": {
-      "zod": "^4.0.17"
-    }
-  },
   "trustedDependencies": [
     "@tailwindcss/oxide",
     "unrs-resolver"
