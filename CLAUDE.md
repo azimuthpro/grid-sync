@@ -74,9 +74,17 @@ Use `/help` to see all available commands.
 
 ## Recent Updates
 
-### v1.0.0 (Current) - Major Framework Upgrade
+### v1.0.2 (Current) - Toolchain Modernization
 
-**Last Documentation Sync**: 2025-12-12 - Documentation updated to reflect Next.js 16 and React 19.2 upgrade
+**Last Documentation Sync**: 2026-09-07
+
+- **Node.js 24 + Bun** - Runtime pinned via `.nvmrc`/`engines.node`; Bun replaces npm as the package manager (`bun.lock`). Use `bun install` and `bun run <script>` — never `npm`.
+- **AI SDK v6 / Gemini 3** - `gemini-vision.ts` and `image-processor.ts` rewritten against AI SDK 6.x, using `gemini-3-flash-preview`.
+- **IMGW headers** - Insolation fetches now send explicit request headers to avoid 403s.
+
+### v1.0.0 - Major Framework Upgrade
+
+**Documentation Sync**: 2025-12-12 - Documentation updated to reflect Next.js 16 and React 19.2 upgrade
 
 **Breaking Changes**:
 - **Next.js 16 migration** - Upgraded from 15.4.6 to 16.0.10 with architectural changes

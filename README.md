@@ -203,6 +203,27 @@ supabase/
 
 ## Version History
 
+### v1.0.2 (September 7, 2026)
+
+**Toolchain Modernization & Data Pipeline Fixes**
+
+**Bug Fixes:**
+
+- **IMGW insolation fetching** - Added required request headers to resolve HTTP 403 rejections when pulling solar data from the IMGW source
+
+**Technical Improvements:**
+
+- **Node.js 24 runtime** - Pinned via `.nvmrc` and `engines.node` so local development and Vercel deployments run the same version
+- **Bun package manager** - Replaced npm with Bun 1.2; `bun.lock` supersedes `package-lock.json`, and `trustedDependencies` declares the postinstall scripts Bun blocks by default
+- **AI SDK v6 and Gemini 3** - Upgraded the Vercel AI SDK from 5.x to 6.0.39 and moved image parsing to Gemini 3 Flash, with corresponding rewrites to the Gemini vision and image processor services
+- **Dependency cleanup** - Removed the dead `zod-to-json-schema` override, obsolete since AI SDK v6 stopped depending on it
+- **Documentation accuracy** - Synced README and CLAUDE.md with the real dependency versions, project structure, and build commands
+
+**Upgrade Notes:**
+
+- Contributors must switch to Node 24.x (`nvm use`) and install Bun; `npm install` is no longer the supported install path
+- Delete any local `node_modules` and `package-lock.json` before running `bun install`
+
 ### v1.0.1 (December 12, 2025)
 
 **Type Safety Improvements**
