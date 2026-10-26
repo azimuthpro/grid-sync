@@ -38,15 +38,15 @@ A desktop web application for prosumers (energy producers-consumers) that automa
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16.0.10 with React 19.2.3, TypeScript 5, and Tailwind CSS 4
-- **Backend**: Supabase 2.87.1 (PostgreSQL, Authentication with SSR 0.8.0)
-- **AI Integration**: Vercel AI SDK 6.0.39 with Google Gemini (@ai-sdk/google 3.0.10)
+- **Frontend**: Next.js 16.4.3 with React 19.3.1, TypeScript 5, and Tailwind CSS 4
+- **Backend**: Supabase 2.118.0 (PostgreSQL, Authentication with SSR 0.8.0)
+- **AI Integration**: Vercel AI SDK 7.0.153 with Google Gemini 3.8 Flash (@ai-sdk/google 4.0.105)
 - **UI Components**: Radix UI (Dialog, Dropdown Menu, Select, Tabs) with custom styling
-- **Forms**: React Hook Form 7.68.0 with Zod 4.1.13 validation via @hookform/resolvers 5.2.1
-- **State Management**: Zustand 5.0.9, SWR 2.3.7
-- **Charts**: Recharts 3.5.1 for data visualization
-- **CSV Export**: PapaParse 5.5.3 for report generation
-- **Date Handling**: date-fns 4.1.0 with date-fns-tz 3.2.0 for timezone support
+- **Forms**: React Hook Form 7.91.0 with Zod 4.6.7 validation via @hookform/resolvers 5.9.2
+- **State Management**: Zustand 5.0.16, SWR 2.5.1
+- **Charts**: Recharts 3.10.1 for data visualization
+- **CSV Export**: PapaParse 5.7.0 for report generation
+- **Date Handling**: date-fns 4.4.0 with date-fns-tz 3.2.0 for timezone support
 - **Icons**: lucide-react 0.561.0
 - **Analytics**: Vercel Analytics 1.6.1
 - **Runtime & Package Manager**: Node.js 24.x with Bun 1.2
@@ -202,6 +202,27 @@ supabase/
 5. Open a Pull Request
 
 ## Version History
+
+### v1.1.0 (October 26, 2026)
+
+**IMGW Map Source Migration & Gemini 3.8**
+
+**Bug Fixes:**
+
+- **IMGW insolation maps** - IMGW moved the OZE forecast maps to modele.imgw.pl, where the page shows them as `blob:` URLs. The service now fetches the underlying PNGs from `modele.imgw.pl/wp-content/uploads/production/ecmwf/oze_sun/mapa_png/`; the old cmm.imgw.pl path returned an HTML page instead of an image
+- **Fail loudly on a moved source** - Non-image responses are now rejected instead of being sent to Gemini
+- **City abbreviations** - Fixed the lookup of the "Gorzów" and "Zielona G." map labels
+
+**New Features:**
+
+- **Gemini 3.8 Flash** - Map parsing moved from `gemini-3-flash-preview` to `gemini-3.8-flash`
+- **New map layout** - The prompt reads the date and hour from the map header and the year from the "Aktualizacja" footer
+- **72-hour forecast range** - Forecast steps 1-72 are fetched, skipping the 21:00-03:00 steps when PV output is 0% across Poland
+
+**Technical Improvements:**
+
+- **AI SDK 7** - Upgraded `ai` to 7.x and `@ai-sdk/google` to 4.x; `generateObject` replaced with `generateText` + `Output.object`, with a 30 s request timeout
+- **Dependency refresh** - Next.js 16.4.3, React 19.3.1, Recharts 3.10, Zod 4.6, Supabase JS 2.118 and the remaining packages within their major versions
 
 ### v1.0.2 (September 7, 2026)
 

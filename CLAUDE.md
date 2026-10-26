@@ -74,7 +74,14 @@ Use `/help` to see all available commands.
 
 ## Recent Updates
 
-### v1.0.2 (Current) - Toolchain Modernization
+### v1.1.0 (Current) - IMGW Map Source & Gemini 3.8
+
+**Last Documentation Sync**: 2026-10-26
+
+- **IMGW source moved** - Maps come from `https://modele.imgw.pl/wp-content/uploads/production/ecmwf/oze_sun/mapa_png/ECMWF_PPv_sun_{1..72}_percent.png` (the site shows them as `blob:` URLs). Step N covers local hour N % 24; night steps are skipped in `image-processor.ts`.
+- **AI SDK 7 / Gemini 3.8** - `gemini-vision.ts` uses `generateText` + `Output.object` with `gemini-3.8-flash`; date/hour read from the map header, year from the "Aktualizacja" footer.
+
+### v1.0.2 - Toolchain Modernization
 
 **Last Documentation Sync**: 2026-09-07
 
