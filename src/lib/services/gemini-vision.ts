@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google';
-import { generateObject } from 'ai';
+import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import type { GeminiVisionResponse, PolishCity } from '@/types';
 import { POLISH_CITIES_WITH_PROVINCES, getProvinceForCity } from '@/types';
@@ -36,7 +36,7 @@ const InsolationDataSchema = z.object({
 });
 
 export class GeminiVisionService {
-  private static readonly model = google('gemini-3-flash-preview');
+  private static readonly model = google('gemini-3.8-flash');
 
   // Batch processing configuration
   private static readonly BATCH_SIZE = 10; // Process 10 images concurrently
@@ -44,20 +44,19 @@ export class GeminiVisionService {
   private static readonly REQUEST_TIMEOUT = 30000; // 30 second timeout per request
 
   /**
-   * Analyze image using Gemini 2.5 Flash and extract structured data
+   * Analyze image using Gemini 3.8 Flash and extract structured data
    */
   static async analyzeImage(imageUrl: string): Promise<GeminiVisionResponse> {
     try {
-      // Fetch image as base64
-      const base64Image = await ImageProcessor.fetchImageAsBase64(imageUrl);
+      const imageBuffer = await ImageProcessor.fetchImage(imageUrl);
 
       // Create prompt for extracting data from PV insolation map
       const prompt = this.createAnalysisPrompt();
 
-      // Generate structured output using Vercel AI SDK
-      const { object } = await generateObject({
+      // Gemini 3+ is tuned for the default temperature; lowering it can cause looping
+      const { output: object } = await generateText({
         model: this.model,
-        schema: InsolationDataSchema,
+        output: Output.object({ schema: InsolationDataSchema }),
         messages: [
           {
             role: 'user',
@@ -67,13 +66,14 @@ export class GeminiVisionService {
                 text: prompt,
               },
               {
-                type: 'image',
-                image: `data:image/png;base64,${base64Image}`,
+                type: 'file',
+                mediaType: 'image/png',
+                data: new Uint8Array(imageBuffer),
               },
             ],
           },
         ],
-        temperature: 0.1, // Low temperature for consistent extraction
+        timeout: this.REQUEST_TIMEOUT,
       });
 
       // Validate and normalize city names
@@ -108,62 +108,35 @@ export class GeminiVisionService {
       'sobota',
     ];
 
-    return `You are analyzing a Polish meteorological map showing photovoltaic (PV) solar energy generation capacity as percentages.
+    return `You are analyzing a Polish meteorological map (IMGW-PIB, modele.imgw.pl) showing the forecast photovoltaic (PV) power output as a percentage of installed capacity.
 
-    IMPORTANT TEMPORAL CONTEXT:
-    - The images show ACTUAL dates (today or past dates when the forecast was made)
-    - However, the measurements/forecasts are for TODAY and FUTURE days
-    - Current actual date: ${currentDate.toISOString().split('T')[0]} (${polishDaysOfWeek[currentDate.getDay()]})
-    - Polish days of week: ${polishDaysOfWeek.join(', ')}
+    Current actual date: ${currentDate.toISOString().split('T')[0]} (${polishDaysOfWeek[currentDate.getDay()]})
 
-    The image shows:
-    1. A map of Poland with cities marked
-    2. Date and time information (extract the current forecast date and hour)
-    3. Color-coded areas showing solar insolation percentages
-    4. City labels with PV insolation percentage
-    5. Legend or scale showing percentage values
+    The image layout:
+    1. Header box (top right): Polish weekday name, day and month as "DD.MM", and the forecast hour interval, e.g. "Poniedziałek 26.10 | 12:00-13:00"
+    2. A map of Poland with city names, each with a percentage label next to it
+    3. Legend "Instalacja PV - MOC GENEROWANA (%)" with a 0-100 color scale (bottom left)
+    4. Footer: "Model: ECMWF HRES 0.1°   Aktualizacja: DD.MM.YY HH:MM" - the model run date with a two-digit year
 
     Your task:
-    1. First, extract the DATE from the image and identify its corresponding Polish weekday name
-    2. Then, look for the weekday name displayed on the image to identify the actual measurement date
-    3. Extract the HOUR from the image (0-23 format)
-    4. For each of these Polish cities that you can identify on the map, extract the solar insolation percentage and province if visible:
+    1. DATE: take the day and month from the header ("DD.MM"). The header has no year: take the year from the "Aktualizacja" date in the footer (two-digit year YY means 20YY). If the header month is earlier than the "Aktualizacja" month (forecast crosses New Year), use the following year. Return YYYY-MM-DD.
+    2. Check the header weekday (${polishDaysOfWeek.join(', ')}) against the date you built - they must match. The forecast date is the "Aktualizacja" date or up to 3 days after it.
+    3. HOUR: the START hour of the header interval (0-23), e.g. "12:00-13:00" -> 12, "00:00-01:00" -> 0.
+    4. For each of these Polish cities that you can identify on the map, extract the percentage printed next to its name:
 
     Cities to look for: ${cityList}
 
     Polish Provinces (Voivodeships): Dolnośląskie, Kujawsko-Pomorskie, Lubelskie, Lubuskie, Łódzkie, Małopolskie, Mazowieckie, Opolskie, Podkarpackie, Podlaskie, Pomorskie, Śląskie, Świętokrzyskie, Warmińsko-Mazurskie, Wielkopolskie, Zachodniopomorskie
 
-    Polish days of week: ${polishDaysOfWeek.join(', ')}
-
-    Current reference: Year ${currentDate.getFullYear()}, Month ${currentDate.getMonth() + 1}, Day ${currentDate.getDate()}.
-
-    WEEKDAY IDENTIFICATION PROCESS:
-    1. Look for "Start: <date>" marking on the image - this indicates TODAY's date (the starting reference point)
-    2. Extract any other dates shown on the image (YYYY-MM-DD format)
-    3. Calculate which Polish weekday these dates correspond to using the days: ${polishDaysOfWeek.join(', ')}
-    4. Look for the actual weekday name displayed on the image (may be different from calculated weekday)
-    5. Use the weekday name from the image to determine the actual measurement date
-    6. The measurement date might be: TODAY (Start date), TOMORROW (Start + 1 day), or DAY AFTER TOMORROW (Start + 2 days)
-    7. Cross-reference with current date: ${currentDate.toISOString().split('T')[0]} (${polishDaysOfWeek[currentDate.getDay()]})
-    8. The final date should reflect the measurement period, not necessarily the image creation date
-
-    IMPORTANT INSTRUCTIONS:   
+    IMPORTANT INSTRUCTIONS:
+    - Read the percentage printed in the label next to each city name, do not estimate it from the map colors
+    - Labels can sit above or below the city name; pair each percentage with its nearest city name
+    - Abbreviated names on the map: "Gorzów" = Gorzów Wielkopolski, "Zielona G." = Zielona Góra
     - Only include cities that you can clearly identify on the map
-    - DO NOT include cities with 0% insolation values
-    - The percentage values represent solar insolation capacity (0-100), e.g. 10 means that the city has 10% of the potential for solar energy generation
-    - Look for "Start: <date>" marking on the image to identify the starting date (today)
-    - Remember: image date may be actual past date, but forecast data is for current/future periods
-    - The forecast measurement date can only be: today (start date), tomorrow (start + 1), or day after tomorrow (start + 2)
-    - Cross-reference the calculated weekday with the weekday name shown on the image
-    - If weekday names differ, prioritize the weekday shown on the image for determining measurement date
-    - Determine if the displayed weekday corresponds to today, tomorrow, or day after tomorrow relative to the start date
-    - If you can identify the province/voivodeship for a city, include it
+    - DO NOT include cities with 0% values
     - Use exact city names as provided in the list above
-    - Date should be in YYYY-MM-DD format
-    - Hour should be a number from 0-23
-    - Skip any city showing 0% insolation percentage
-
-    The map shows forecast data for photovoltaic energy generation potential across Poland.`;
+    - If you can identify the province/voivodeship for a city, include it
+    - Date must be in YYYY-MM-DD format, hour a number from 0-23`;
   }
 
   /**
@@ -243,8 +216,8 @@ export class GeminiVisionService {
 
     // Handle common variations
     const variations: Record<string, PolishCity> = {
-      Gorzów: 'Gorzów Wielkopolski',
-      'Zielona G.': 'Zielona Góra',
+      gorzów: 'Gorzów Wielkopolski',
+      'zielona g.': 'Zielona Góra',
     };
 
     const variationMatch = variations[normalized.toLowerCase()];

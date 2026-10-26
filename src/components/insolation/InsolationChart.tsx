@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  type TooltipContentProps,
 } from 'recharts';
 import { BarChart3, LineChart as LineChartIcon, ChartLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -122,21 +123,14 @@ const InsolationChartComponent = function InsolationChart({
     active,
     payload,
     label,
-  }: {
-    active?: boolean;
-    payload?: readonly {
-      payload: Record<string, string | number>;
-      value: number;
-    }[];
-    label?: string | number;
-  }) => {
+  }: TooltipContentProps) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const data = (payload[0].payload ?? {}) as Record<string, string | number>;
       return (
         <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 shadow-lg">
           <p className="text-gray-200 font-medium">{label}</p>
           <p className="text-blue-400">
-            Nasłonecznienie: {payload[0].value.toFixed(1)}%
+            Nasłonecznienie: {Number(payload[0].value).toFixed(1)}%
           </p>
           {data.dates && (
             <p className="text-gray-400 text-sm">Dni: {data.dates}</p>
