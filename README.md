@@ -58,6 +58,7 @@ A desktop web application for prosumers (energy producers-consumers) that automa
 
 - **Node.js 24.x** (see `.nvmrc` — run `nvm use` to switch)
 - **Bun 1.2 or later** — used as the package manager ([install](https://bun.sh))
+- **Docker** and the **Supabase CLI** — for the local database
 
 1. Clone the repository:
 
@@ -72,21 +73,21 @@ cd grid-sync
 bun install
 ```
 
-3. Set up environment variables:
-   Create a `.env.local` file in the root directory with:
+3. Start the local Supabase stack (needs Docker and the [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started)):
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_key
-GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
+supabase start
 ```
 
-4. Set up the database:
+This applies every migration in `supabase/migrations/` and loads `supabase/seed.sql` (sample insolation data for all tracked cities). Studio runs at [http://127.0.0.1:54323](http://127.0.0.1:54323), and `supabase db reset` rebuilds the database from scratch.
 
-- Create a new Supabase project
-- Run the database migrations (6 SQL files in `supabase/migrations/` folder)
-- Configure Row Level Security policies
+4. Set up environment variables:
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in the publishable and secret keys printed by `supabase status`, plus `GOOGLE_GENERATIVE_AI_API_KEY` and any `CRON_SECRET`. Sign up in the app to create a local user; email confirmation is off locally.
 
 5. Run the development server:
 
