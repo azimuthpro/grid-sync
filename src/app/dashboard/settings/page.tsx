@@ -84,7 +84,7 @@ export default function SettingsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-100">Ustawienia</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-50">Ustawienia</h1>
       </div>
 
       <div className="max-w-2xl space-y-6">
@@ -238,7 +238,7 @@ export default function SettingsPage() {
           </h3>
           <p className="text-gray-400 text-sm">
             Wersja aplikacji:{' '}
-            <span className="text-blue-400 font-mono">1.0.1</span>
+            <span className="text-gray-200 font-mono">{process.env.NEXT_PUBLIC_APP_VERSION}</span>
           </p>
         </div>
       </div>

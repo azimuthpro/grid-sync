@@ -136,7 +136,7 @@ export function LocationList({ locations }: LocationListProps) {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-100">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-50">
           Lokalizacje ({locations.length})
         </h1>
 

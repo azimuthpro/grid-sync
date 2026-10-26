@@ -116,7 +116,7 @@ export default function ConsumptionProfilePage() {
         </Button>
 
         <div className="flex items-center ">
-          <h1 className="text-2xl font-bold text-gray-100">
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-50">
             Profil zużycia energii
           </h1>
         </div>

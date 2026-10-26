@@ -129,7 +129,7 @@ const InsolationChartComponent = function InsolationChart({
       return (
         <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 shadow-lg">
           <p className="text-gray-200 font-medium">{label}</p>
-          <p className="text-blue-400">
+          <p className="text-amber-400 tabular-nums">
             Nasłonecznienie: {Number(payload[0].value).toFixed(1)}%
           </p>
           {data.dates && (
@@ -221,12 +221,12 @@ const InsolationChartComponent = function InsolationChart({
           <ResponsiveContainer width="100%" height="100%">
             {chartType === 'line' ? (
               <LineChart data={processedData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#222c35" />
                 <XAxis
                   dataKey="time"
-                  stroke="#9CA3AF"
+                  stroke="#4a5763"
                   fontSize={12}
-                  tick={{ fill: '#9CA3AF' }}
+                  tick={{ fill: '#8593a0' }}
                   tickFormatter={(value) => {
                     if (viewType === 'hourly') {
                       // Show only time for hourly view
@@ -236,9 +236,9 @@ const InsolationChartComponent = function InsolationChart({
                   }}
                 />
                 <YAxis
-                  stroke="#9CA3AF"
+                  stroke="#4a5763"
                   fontSize={12}
-                  tick={{ fill: '#9CA3AF' }}
+                  tick={{ fill: '#8593a0' }}
                   domain={[0, 100]}
                   tickFormatter={(value) => `${value}%`}
                 />
@@ -246,20 +246,20 @@ const InsolationChartComponent = function InsolationChart({
                 <Line
                   type="monotone"
                   dataKey="insolation"
-                  stroke="#3B82F6"
+                  stroke="#f2b13d"
                   strokeWidth={2}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 3 }}
-                  activeDot={{ r: 5, stroke: '#3B82F6', strokeWidth: 2 }}
+                  dot={{ fill: '#f2b13d', strokeWidth: 2, r: 3 }}
+                  activeDot={{ r: 5, stroke: '#f2b13d', strokeWidth: 2 }}
                 />
               </LineChart>
             ) : (
               <BarChart data={processedData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#222c35" />
                 <XAxis
                   dataKey="time"
-                  stroke="#9CA3AF"
+                  stroke="#4a5763"
                   fontSize={12}
-                  tick={{ fill: '#9CA3AF' }}
+                  tick={{ fill: '#8593a0' }}
                   tickFormatter={(value) => {
                     if (viewType === 'hourly') {
                       return value.split(' ')[1] || value;
@@ -268,16 +268,16 @@ const InsolationChartComponent = function InsolationChart({
                   }}
                 />
                 <YAxis
-                  stroke="#9CA3AF"
+                  stroke="#4a5763"
                   fontSize={12}
-                  tick={{ fill: '#9CA3AF' }}
+                  tick={{ fill: '#8593a0' }}
                   domain={[0, 100]}
                   tickFormatter={(value) => `${value}%`}
                 />
                 <Tooltip content={CustomTooltip} />
                 <Bar
                   dataKey="insolation"
-                  fill="#3B82F6"
+                  fill="#f2b13d"
                   radius={[2, 2, 0, 0]}
                 />
               </BarChart>

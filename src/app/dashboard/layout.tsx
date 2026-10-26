@@ -81,40 +81,57 @@ export default function DashboardLayout({
     }
   };
 
+  const isActive = (href: string) =>
+    href === '/dashboard'
+      ? pathname === href
+      : pathname === href || pathname.startsWith(`${href}/`);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-700 border-t-blue-400"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-gray-950">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800 shadow-2xl">
+      <aside className="fixed inset-y-0 left-0 w-60 bg-gray-900 border-r border-gray-800">
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center h-16 px-6 mt-4">
-            <span className="text-xl font-bold text-gray-100">GridSync</span>
-          </div>
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2.5 h-16 px-5 border-b border-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"
+          >
+            <BrandMark />
+            <span className="text-base font-semibold tracking-tight text-gray-50">
+              GridSync
+            </span>
+          </Link>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-3 py-4 space-y-0.5" aria-label="Główna nawigacja">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
+              const active = isActive(item.href);
               return (
                 <Link
                   key={item.name}
                   href={item.href}
+                  aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors',
-                    isActive
-                      ? 'bg-blue-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-gray-100'
+                    'relative flex items-center gap-3 px-3 h-10 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
+                    active
+                      ? 'bg-gray-800 text-gray-50 font-medium before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-blue-400'
+                      : 'text-gray-400 hover:bg-gray-800/60 hover:text-gray-100'
                   )}
                 >
-                  <item.icon className="h-5 w-5 mr-3" />
+                  <item.icon
+                    className={cn(
+                      'h-[18px] w-[18px] shrink-0',
+                      active ? 'text-blue-300' : 'text-gray-500'
+                    )}
+                  />
                   {item.name}
                 </Link>
               );
@@ -122,22 +139,43 @@ export default function DashboardLayout({
           </nav>
 
           {/* User section */}
-          <div className="p-4">
+          <div className="p-3 border-t border-gray-800">
             <button
               onClick={handleSignOut}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-gray-100 rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-3 w-full px-3 h-10 text-sm text-gray-400 hover:bg-gray-800/60 hover:text-gray-100 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
             >
-              <LogOut className="h-4 w-4 mr-3" />
+              <LogOut className="h-4 w-4 text-gray-500" />
               Wyloguj się
             </button>
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* Main content */}
-      <div className="pl-64">
-        <main className="min-h-screen">{children}</main>
+      <div className="pl-60">
+        <main className="min-h-screen mx-auto max-w-[1440px]">{children}</main>
       </div>
     </div>
+  );
+}
+
+/** Sun resting on the grid line: production meets the network */
+function BrandMark() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 22 22"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      <path d="M4 14a7 7 0 0 1 14 0Z" fill="var(--sun)" />
+      <path
+        d="M1 14h20M4 18h14"
+        stroke="var(--color-blue-400)"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

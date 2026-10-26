@@ -3,6 +3,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useInsolationCities } from '@/hooks/useInsolation';
 import { POLISH_PROVINCES } from '@/types';
 
@@ -128,41 +135,52 @@ export function InsolationFilters({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {/* Province filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              id="filter-province-label"
+              className="block text-sm font-medium text-gray-300 mb-2"
+            >
               Województwo
             </label>
-            <select
-              value={province}
-              onChange={(e) => setProvince(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Wszystkie</option>
-              {POLISH_PROVINCES.map((prov) => (
-                <option key={prov} value={prov}>
-                  {prov}
-                </option>
-              ))}
-            </select>
+            <Select value={province} onValueChange={setProvince}>
+              <SelectTrigger aria-labelledby="filter-province-label">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie</SelectItem>
+                {POLISH_PROVINCES.map((prov) => (
+                  <SelectItem key={prov} value={prov}>
+                    {prov}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* City filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              id="filter-city-label"
+              className="block text-sm font-medium text-gray-300 mb-2"
+            >
               Miasto
             </label>
-            <select
+            <Select
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onValueChange={setCity}
               disabled={province === 'all' || citiesLoading}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <option value="all">Wszystkie</option>
-              {cities.map((cityName) => (
-                <option key={cityName} value={cityName}>
-                  {cityName}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger aria-labelledby="filter-city-label">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie</SelectItem>
+                {cities.map((cityName) => (
+                  <SelectItem key={cityName} value={cityName}>
+                    {cityName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {citiesLoading && (
               <p className="text-xs text-gray-500 mt-1">Ładowanie miast...</p>
             )}
