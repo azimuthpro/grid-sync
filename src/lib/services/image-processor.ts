@@ -1,19 +1,23 @@
 import type { InsolationImageData } from '@/types'
 
 export class ImageProcessor {
-  private static readonly BASE_URL = 'https://cmm.imgw.pl/cmm/wp-content/uploads/production/ecmwf/oze_sun/mapa_png/'
+  // modele.imgw.pl loads these via fetch() and shows them as blob: URLs; the files themselves are plain PNGs
+  private static readonly BASE_URL = 'https://modele.imgw.pl/wp-content/uploads/production/ecmwf/oze_sun/mapa_png/'
   private static readonly MAX_RETRIES = 3
   private static readonly RETRY_DELAY = 1000 // 1 second
 
-  private static readonly IMAGE_PERCENTAGES: number[] = [
-    3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-    27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46,
-    51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70]
+  // Forecast steps +1h..+72h, the map for step N covers local hour N % 24 (step 1 = 01:00-02:00).
+  // Steps covering 21:00-03:00 are 0% across Poland all year round, so they are skipped.
+  private static readonly FORECAST_HOURS = 72
+  private static readonly NIGHT_STEPS = new Set([21, 22, 23, 0, 1, 2])
+  private static readonly IMAGE_PERCENTAGES: number[] = Array.from(
+    { length: ImageProcessor.FORECAST_HOURS },
+    (_, i) => i + 1
+  ).filter((step) => !ImageProcessor.NIGHT_STEPS.has(step % 24))
 
   private static readonly FETCH_HEADERS: HeadersInit = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-    'Referer': 'https://modele.imgw.pl/cmm/?page_id=37629',
-    'Origin': 'https://modele.imgw.pl',
+    'Referer': 'https://modele.imgw.pl/serwis-oze?tab=forecasts',
     'Accept': 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
     'Accept-Language': 'pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7',
   }
@@ -33,6 +37,12 @@ export class ImageProcessor {
 
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        // A moved/retired path answers 200 with an HTML page instead of a 404
+        const contentType = response.headers.get('content-type') || ''
+        if (!contentType.startsWith('image/')) {
+          throw new Error(`Expected an image, got ${contentType || 'unknown content type'}`)
         }
 
         return await response.arrayBuffer()
@@ -87,7 +97,7 @@ export class ImageProcessor {
   }
 
   static isValidImageUrl(url: string): boolean {
-    return /^https:\/\/cmm\.imgw\.pl\/.*\/ECMWF_PPv_sun_\d+_percent\.png$/.test(url)
+    return /^https:\/\/modele\.imgw\.pl\/.*\/ECMWF_PPv_sun_\d+_percent\.png$/.test(url)
   }
 
   static getImageMetadata(url: string): { percentage: number; filename: string } {
