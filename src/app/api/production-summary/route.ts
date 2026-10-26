@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServiceClient } from '@/lib/supabase/service'
+import { cookies } from 'next/headers'
+import { createSupabaseServerClient } from '@/lib/supabase/client'
 import { calculatePVProduction, calculateDailyProduction } from '@/lib/utils/pv-production'
 import { getProvinceForCity, APP_TIMEZONE } from '@/types'
 import type { UserLocation, InsolationData, ConsumptionProfile } from '@/types'
@@ -19,7 +20,16 @@ export async function GET(request: NextRequest) {
     }
 
     const locationIdArray = locationIds.split(',')
-    const supabase = createSupabaseServiceClient()
+    // User-scoped client: RLS limits locations and consumption profiles to the caller's own
+    const cookieStore = await cookies()
+    const supabase = createSupabaseServerClient(cookieStore)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // Get current date and hour in Warsaw timezone
     const now = new Date()
