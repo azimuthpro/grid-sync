@@ -5,17 +5,17 @@ import type { UserLocation } from '@/types'
 import { Env } from '@/lib/Env.mjs'
 
 function getSupabaseUrl() {
-  const url = Env.SUPABASE_URL
+  const url = Env.NEXT_PUBLIC_SUPABASE_URL
   if (!url) {
-    throw new Error('Missing Env.SUPABASE_URL')
+    throw new Error('Missing Env.NEXT_PUBLIC_SUPABASE_URL')
   }
   return url
 }
 
 function getSupabaseAnonKey() {
-  const key = Env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const key = Env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   if (!key) {
-    throw new Error('Missing Env.NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    throw new Error('Missing Env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY')
   }
   return key
 }

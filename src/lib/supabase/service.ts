@@ -8,7 +8,7 @@ import { Env } from '../Env.mjs'
  */
 export function createSupabaseServiceClient() {
   const supabaseUrl = Env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceKey = Env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseServiceKey = Env.SUPABASE_SECRET_KEY
 
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error('Missing Supabase configuration for service client')

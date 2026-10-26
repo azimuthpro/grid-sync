@@ -18,9 +18,9 @@ function getSupabaseUrl() {
 }
 
 function getSupabaseAnonKey() {
-  const key = Env.SUPABASE_ANON_KEY
+  const key = Env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   if (!key) {
-    throw new Error('Missing Env.NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    throw new Error('Missing Env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY')
   }
   return key
 }
