@@ -239,6 +239,7 @@ export const POLISH_CITIES_WITH_PROVINCES: Record<string, string> = {
   Toruń: 'Kujawsko-Pomorskie',
   Warszawa: 'Mazowieckie',
   Wrocław: 'Dolnośląskie',
+  Zakopane: 'Małopolskie',
   'Zielona Góra': 'Lubuskie',
   Łódź: 'Łódzkie',
 } as const;
