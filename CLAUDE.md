@@ -74,7 +74,15 @@ Use `/help` to see all available commands.
 
 ## Recent Updates
 
-### v1.1.0 (Current) - IMGW Map Source & Gemini 3.8
+### v2.0.0 (Current) - Supabase API Keys & Local Stack
+
+**Last Documentation Sync**: 2026-10-27
+
+- **Supabase keys** - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for browser and user-scoped clients, `SUPABASE_SECRET_KEY` for the service client (`lib/supabase/service.ts`); legacy anon/service_role keys are no longer read.
+- **Local Supabase** - `supabase start` runs the stack from `supabase/config.toml`; migrations replay from a baseline and `supabase/seed.sql` seeds a test account and data.
+- **production-summary** - Uses the user's session client so RLS applies; never use the service client for user-scoped reads.
+
+### v1.1.0 - IMGW Map Source & Gemini 3.8
 
 **Last Documentation Sync**: 2026-10-26
 

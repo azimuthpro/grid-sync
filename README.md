@@ -204,6 +204,30 @@ supabase/
 
 ## Version History
 
+### v2.0.0 (October 27, 2026)
+
+**Supabase API Keys, Local Stack & UI Refresh**
+
+**Breaking Changes:**
+
+- **New Supabase API keys** - Supabase disabled the legacy `anon` and `service_role` JWT keys, so sign-in failed with "Legacy API keys are disabled". The app now reads `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`sb_publishable_...`) and `SUPABASE_SECRET_KEY` (`sb_secret_...`); `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_URL` are no longer read. Set the new keys from Project Settings > API Keys before deploying
+
+**Security:**
+
+- **Production summary scoped to the caller** - `/api/production-summary` used the service-role client and returned any location by ID; it now uses the signed-in user's client, so RLS limits rows to the caller's own locations, and answers 401 without a session
+
+**New Features:**
+
+- **Zakopane** - Added to the tracked cities (Małopolskie); it was always on the IMGW map but never read
+- **Local Supabase stack** - `supabase/config.toml`, a baseline migration so `supabase db reset` replays the full history, and `seed.sql` with insolation data, a test account and a sample location
+- **UI refresh** - Graphite palette with a cerulean action colour, IBM Plex fonts, a new sidebar with brand mark and active state for sub-pages, a dashboard readout strip, and the select chevron no longer overlapping long values
+
+**Technical Improvements:**
+
+- **Migrations** - Dropped the `is_primary` trigger left behind by an earlier migration and granted table privileges to `service_role`
+- **Environment** - `.env.example` rewritten for the new keys and committed; unused `POSTGRES_*` variables removed from `Env.mjs`
+- **App version in settings** - Settings shows the version from `package.json` via `NEXT_PUBLIC_APP_VERSION`
+
 ### v1.1.0 (October 26, 2026)
 
 **IMGW Map Source Migration & Gemini 3.8**
